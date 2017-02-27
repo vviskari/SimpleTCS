@@ -1,0 +1,73 @@
+{
+    "author": "ville.viskari@gmail.com",
+    "dependencies": {},
+    "keywords": [],
+    "name": "simple-tcs",
+    "pebble": {
+        "capabilities": [
+            "health"
+        ],
+        "displayName": "Simple TCS",
+        "enableMultiJS": true,
+        "messageKeys": [],
+        "projectType": "native",
+        "resources": {
+            "media": [
+                {
+                    "file": "images/kenka.png",
+                    "menuIcon": true,
+                    "name": "IMAGE_KENKA",
+                    "targetPlatforms": null,
+                    "type": "png"
+                },
+                {
+                    "file": "images/nobt.png",
+                    "name": "IMAGE_NOBT",
+                    "targetPlatforms": null,
+                    "type": "png"
+                },
+                {
+                    "file": "images/bt.png",
+                    "name": "IMAGE_BT",
+                    "targetPlatforms": null,
+                    "type": "png"
+                },
+                {
+                    "file": "images/bat.png",
+                    "name": "IMAGE_BAT",
+                    "targetPlatforms": null,
+                    "type": "png"
+                },
+                {
+                    "file": "images/preview.png",
+                    "name": "IMAGE_PREVIEW",
+                    "targetPlatforms": null,
+                    "type": "png"
+                },
+                {
+                    "characterRegex": "[.0-9:]",
+                    "file": "fonts/OpenSans-Regular.ttf",
+                    "name": "FONT_OPEN_32",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
+                {
+                    "characterRegex": "[.0-9:]",
+                    "file": "fonts/OpenSans-Regular.ttf",
+                    "name": "FONT_OPEN_52",
+                    "targetPlatforms": null,
+                    "type": "font"
+                }
+            ]
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "basalt"
+        ],
+        "uuid": "3f772d5a-8752-4b3d-b0aa-986756dffb80",
+        "watchapp": {
+            "watchface": true
+        }
+    },
+    "version": "1.0.0"
+}
