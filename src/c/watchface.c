@@ -1,4 +1,4 @@
-#include <pebble.h>
+  #include <pebble.h>
 /*
 SharedPebble.getPebbleNow().set_time((new Date().getTime())+(1000*60*60*24*2))
 */
@@ -47,7 +47,7 @@ const uint32_t BATT_CHARGING_KEY = 2;
 
 static void estimate_battery(BatteryChargeState charge_state) {
 
-	time_t now = time(NULL);
+  time_t now = time(NULL);
 
   // Store current charging state
   bool lastCharging = false;
@@ -182,34 +182,34 @@ static void estimate_battery(BatteryChargeState charge_state) {
 }
 
 static void drawcal() {
-	static char monthdaynumber[3];
-	char weekdaynumber[2];
-	time_t now = time(NULL);
+  static char monthdaynumber[3];
+  char weekdaynumber[2];
+  time_t now = time(NULL);
   // Day of the month (01-31)
-	strftime(monthdaynumber, 3, "%d", localtime(&now));
+  strftime(monthdaynumber, 3, "%d", localtime(&now));
   // The weekday as a number, 1-based from Monday (from ‘1’ to ‘7’). [tm_wday]
-	strftime(weekdaynumber, 2, "%u", localtime(&now));
+  strftime(weekdaynumber, 2, "%u", localtime(&now));
   
-	static char week[3][7][3];
+  static char week[3][7][3];
   GColor highlightDayColor = GColorDarkCandyAppleRed;
 
-	int day_id = 0;
+  int day_id = 0;
   // iterate from weekday number 
-	for (int x = 1-atoi(weekdaynumber)-7; x < 14+1-atoi(weekdaynumber); x++){
+  for (int x = 1-atoi(weekdaynumber)-7; x < 14+1-atoi(weekdaynumber); x++){
     // timestamp adjusted by x days
-		time_t tt = time(NULL)+x*24*3600;
-		struct tm *stm = localtime(&tt);
-		if (day_id >= 14) {
+    time_t tt = time(NULL)+x*24*3600;
+    struct tm *stm = localtime(&tt);
+    if (day_id >= 14) {
       if (day_id%7>=5) {
         text_layer_set_font(s_cal_array_layer[2][day_id-14], fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
       }
-			strftime(week[2][day_id-14], 3, "%d", stm);
+      strftime(week[2][day_id-14], 3, "%d", stm);
       text_layer_set_text(s_cal_array_layer[2][day_id-14], week[2][day_id-14]);
-		} else if (day_id >= 7) {
+    } else if (day_id >= 7) {
       if (day_id%7>=5) {
         text_layer_set_font(s_cal_array_layer[1][day_id-7], fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
       }
-			strftime(week[1][day_id-7], 3, "%d", stm);
+      strftime(week[1][day_id-7], 3, "%d", stm);
       text_layer_set_text(s_cal_array_layer[1][day_id-7], week[1][day_id-7]);
 
       if (strcmp(monthdaynumber, week[1][day_id-7]) == 0) {
@@ -223,12 +223,12 @@ static void drawcal() {
       if (day_id%7>=5) {
         text_layer_set_font(s_cal_array_layer[0][day_id], fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
       }
-			strftime(week[0][day_id], 3, "%d", stm);
+      strftime(week[0][day_id], 3, "%d", stm);
       text_layer_set_text(s_cal_array_layer[0][day_id], week[0][day_id]);
       text_layer_set_background_color(s_cal_array_layer[0][day_id], GColorBlack);
-		}
-		day_id++;
-	}
+    }
+    day_id++;
+  }
 }
 
 static bool userIsSleeping() {
