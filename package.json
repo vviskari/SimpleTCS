@@ -14,9 +14,15 @@
         "resources": {
             "media": [
                 {
-                    "file": "images/kenka.png",
+                    "file": "images/shoe.png",
                     "menuIcon": true,
-                    "name": "IMAGE_KENKA",
+                    "name": "IMAGE_SHOE",
+                    "targetPlatforms": null,
+                    "type": "png"
+                },
+                {
+                    "file": "images/preview.png",
+                    "name": "IMAGE_PREVIEW",
                     "targetPlatforms": null,
                     "type": "png"
                 },
@@ -39,22 +45,16 @@
                     "type": "png"
                 },
                 {
-                    "file": "images/preview.png",
-                    "name": "IMAGE_PREVIEW",
-                    "targetPlatforms": null,
-                    "type": "png"
-                },
-                {
                     "characterRegex": "[.0-9:]",
                     "file": "fonts/OpenSans-Regular.ttf",
-                    "name": "FONT_OPEN_32",
+                    "name": "FONT_OPEN_52",
                     "targetPlatforms": null,
                     "type": "font"
                 },
                 {
                     "characterRegex": "[.0-9:]",
                     "file": "fonts/OpenSans-Regular.ttf",
-                    "name": "FONT_OPEN_52",
+                    "name": "FONT_OPEN_32",
                     "targetPlatforms": null,
                     "type": "font"
                 }

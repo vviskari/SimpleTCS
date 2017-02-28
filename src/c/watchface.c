@@ -1,7 +1,11 @@
-  #include <pebble.h>
-/*
-SharedPebble.getPebbleNow().set_time((new Date().getTime())+(1000*60*60*24*2))
-*/
+//
+// Simple TCS watchface for Pebble (Time series)
+//
+// Based on "Simple Time and Calendar" by Michael S.
+// 
+//
+
+#include <pebble.h>
 static Window *s_main_window;
 static TextLayer *s_connection_layer;
 static TextLayer *s_battery_layer;
@@ -66,44 +70,43 @@ static void estimate_battery(BatteryChargeState charge_state) {
   BatteryHistory history = (BatteryHistory) { 
     .timestamp = 0, // marks null history if time is 0
     .charge = charge_state.charge_percent, // charge when last disconnected
-    .last_estimated = charge_state.charge_percent, // charge when last estimated battery life
+    .last_estimated = 0, // charge when last estimated battery life
     .slope = -694 // Initial estimate for full battery is 6d
   };
 
-  // Read stored battery history
   if (persist_exists(BATT_HISTORY_KEY)) {
     persist_read_data(BATT_HISTORY_KEY, &history, sizeof(BatteryHistory));
     //APP_LOG(APP_LOG_LEVEL_INFO, "Loaded history, charge=%d, slope=%d", history.charge, history.slope);
   }
 
-  // If just disconnected, set time and charge to history
   if (lastCharging && !charge_state.is_plugged) {
     //APP_LOG(APP_LOG_LEVEL_INFO, "Charger disconnected. Store state to history");
     history.timestamp = now;
     history.charge = charge_state.charge_percent;
   }
   
-  // If history time is 0, means no old history exists, return
-  // Wait until charger disconnected at least once
   if (history.timestamp == 0) {
     APP_LOG(APP_LOG_LEVEL_INFO, "No old history. return");
     return;
   }
   
-  if (charge_state.charge_percent > 80 || history.last_estimated == charge_state.charge_percent) {
-    APP_LOG(APP_LOG_LEVEL_INFO, "Charge same as last time or more than 80. return");
+  if (history.last_estimated == charge_state.charge_percent) {
+    APP_LOG(APP_LOG_LEVEL_INFO, "Charge same as last time. return");
     return;
   }
-
+  
   int historyTimeHours = history.timestamp/60/60;
   int historyChargePercent = history.charge*1000;
   int currentTimeHours = (int)now/60/60;
   int currentChargePercent = charge_state.charge_percent*1000;  
 
-  // calculate slope for current charge against history charge (weighted)
-  history.slope = (2*history.slope + (currentChargePercent-historyChargePercent)/(currentTimeHours-historyTimeHours)) / 3;
-  history.last_estimated = charge_state.charge_percent;
-
+  if (charge_state.charge_percent < 90) {
+    // skip 100 and 90 battery levels, not reliable
+    // calculate slope for current charge against history charge (weighted)
+    history.slope = (2*history.slope + (currentChargePercent-historyChargePercent)/(currentTimeHours-historyTimeHours)) / 3;
+    history.last_estimated = charge_state.charge_percent;
+  }
+  
   // estimated time when battery is 0
   int estimatedBatteryLife = (-historyChargePercent + history.slope * historyTimeHours) / history.slope*60*60;
   APP_LOG(APP_LOG_LEVEL_INFO, "Estimated battery life until %d", estimatedBatteryLife);
@@ -440,7 +443,7 @@ static void main_window_load(Window *window) {
   text_layer_set_background_color(s_battery_layer, GColorClear);
   text_layer_set_font(s_battery_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
 
-  s_shoe_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_KENKA);
+  s_shoe_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_SHOE);
   s_shoe_bitmap_layer = bitmap_layer_create(GRect(8, 94, 24, 12));
   bitmap_layer_set_bitmap(s_shoe_bitmap_layer, s_shoe_bitmap);
   layer_add_child(window_layer, bitmap_layer_get_layer(s_shoe_bitmap_layer));
