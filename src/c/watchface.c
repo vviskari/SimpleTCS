@@ -16,14 +16,17 @@ static TextLayer *s_seconds_layer;
 static TextLayer *s_cal_array_layer[3][7];
 static TextLayer *s_bat_cal_bg_layer[3];
 static TextLayer *s_bat_cal_bat_layer[3];
-static TextLayer *s_steps_layer;
 
 static GBitmap *s_battery_bitmap;
 static GBitmap *s_bluetooth_bitmap;
-static GBitmap *s_shoe_bitmap;
 static BitmapLayer *s_battery_bitmap_layer;
 static BitmapLayer *s_bluetooth_bitmap_layer;
+
+#if defined(PBL_HEALTH)
 static BitmapLayer *s_shoe_bitmap_layer;
+static GBitmap *s_shoe_bitmap;
+static TextLayer *s_steps_layer;
+#endif
 
 const int weekSeconds = 60*60*24*7;
 static bool lastconnected = true;
@@ -62,7 +65,7 @@ static void estimate_battery(BatteryChargeState charge_state) {
 
   // skip everything, if charging
   if (charge_state.is_plugged) {
-    APP_LOG(APP_LOG_LEVEL_INFO, "Charging, skip");
+    //APP_LOG(APP_LOG_LEVEL_INFO, "Charging, skip");
     return;
   }
   
@@ -86,12 +89,12 @@ static void estimate_battery(BatteryChargeState charge_state) {
   }
   
   if (history.timestamp == 0) {
-    APP_LOG(APP_LOG_LEVEL_INFO, "No old history. return");
+    // APP_LOG(APP_LOG_LEVEL_INFO, "No old history. return");
     return;
   }
   
   if (history.last_estimated == charge_state.charge_percent) {
-    APP_LOG(APP_LOG_LEVEL_INFO, "Charge same as last time. return");
+    // APP_LOG(APP_LOG_LEVEL_INFO, "Charge same as last time. return");
     return;
   }
   
@@ -194,7 +197,6 @@ static void drawcal() {
   strftime(weekdaynumber, 2, "%u", localtime(&now));
   
   static char week[3][7][3];
-  GColor highlightDayColor = GColorDarkCandyAppleRed;
 
   int day_id = 0;
   // iterate from weekday number 
@@ -216,10 +218,17 @@ static void drawcal() {
       text_layer_set_text(s_cal_array_layer[1][day_id-7], week[1][day_id-7]);
 
       if (strcmp(monthdaynumber, week[1][day_id-7]) == 0) {
+        #if defined(PBL_COLOR)
         text_layer_set_font(s_cal_array_layer[1][day_id-7], fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-        text_layer_set_background_color(s_cal_array_layer[1][day_id-7], highlightDayColor);
+        text_layer_set_background_color(s_cal_array_layer[1][day_id-7], GColorDarkCandyAppleRed);
+        #else
+        text_layer_set_font(s_cal_array_layer[1][day_id-7], fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+        text_layer_set_background_color(s_cal_array_layer[1][day_id-7], GColorWhite);
+        text_layer_set_text_color(s_cal_array_layer[1][day_id-7], GColorBlack);        
+        #endif
       } else {
         text_layer_set_background_color(s_cal_array_layer[1][day_id-7], GColorClear);
+        text_layer_set_text_color(s_cal_array_layer[1][day_id-7], GColorWhite);
       }
 
     } else {
@@ -266,14 +275,18 @@ static void handle_battery(BatteryChargeState charge_state) {
     text_layer_set_text_color(s_battery_layer, GColorRed);
     text_layer_set_background_color(s_box, GColorRed);
     if (charge_state.charge_percent>20) {
-        text_layer_set_text_color(s_battery_layer, GColorYellow);
+      text_layer_set_text_color(s_battery_layer, GColorYellow);
       text_layer_set_background_color(s_box, GColorYellow);
     }
     if (charge_state.charge_percent>40) {
-        text_layer_set_text_color(s_battery_layer, GColorGreen);
+      text_layer_set_text_color(s_battery_layer, GColorGreen);
       text_layer_set_background_color(s_box, GColorGreen);
     }    
   }
+  #if defined(PBL_BW)
+  text_layer_set_text_color(s_battery_layer, GColorWhite);
+  text_layer_set_background_color(s_box, GColorWhite);
+  #endif
   text_layer_set_text(s_battery_layer, battery_text);
   estimate_battery(charge_state);
 }
@@ -298,8 +311,13 @@ static void handle_bluetooth(bool connected) {
       vibes_enqueue_custom_pattern(pat);
     }
   } else {
+    #if defined(PBL_BW)
+    text_layer_set_text_color(s_connection_layer, GColorWhite);
+    s_bluetooth_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BT);
+    #else
     text_layer_set_text_color(s_connection_layer, GColorRed);
     s_bluetooth_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_NOBT);
+    #endif
     lastconnected = false;
     if (!userIsSleeping()) {
       static uint32_t const segments[] = { 300, 300, 300, 300, 300 };
@@ -316,8 +334,8 @@ static void handle_bluetooth(bool connected) {
 }
 
 static void handle_steps() {
-  static char s_steps_text[] = "N/A  ";
   #if defined(PBL_HEALTH)
+  static char s_steps_text[] = "N/A  ";
 
   if(!userIsSleeping()) {
     HealthMetric metric = HealthMetricStepCount;
@@ -334,23 +352,23 @@ static void handle_steps() {
       int stepsToday = (int)health_service_sum_today(metric);
       APP_LOG(APP_LOG_LEVEL_INFO, "Steps data available: %d", stepsToday);
 
+      snprintf(s_steps_text, sizeof(s_steps_text), "%d", stepsToday);    
+      
+      text_layer_set_text_color(s_steps_layer, GColorWhite);
+      #if defined(PBL_COLOR)
       int average = (int) health_service_sum_averaged(metric, start, end, scope);
       APP_LOG(APP_LOG_LEVEL_INFO, "Average step count: %d steps", (int)average);
-
-      snprintf(s_steps_text, sizeof(s_steps_text), "%d", stepsToday);    
-    
       int diff = 100*stepsToday/average;
       if (diff < 60) {
         text_layer_set_text_color(s_steps_layer, GColorOrange);
       } else if (diff > 95) {
         text_layer_set_text_color(s_steps_layer, GColorGreen);
-      } else {
-        text_layer_set_text_color(s_steps_layer, GColorWhite);
       }
+      #endif
     }
   }
-  #endif
   text_layer_set_text(s_steps_layer, s_steps_text);
+  #endif
 }
 
 static void handle_time(struct tm* tick_time, TimeUnits units_changed) {
@@ -442,7 +460,7 @@ static void main_window_load(Window *window) {
   text_layer_set_text_color(s_battery_layer, GColorWhite);
   text_layer_set_background_color(s_battery_layer, GColorClear);
   text_layer_set_font(s_battery_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
-
+  #if defined(PBL_HEALTH)
   s_shoe_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_SHOE);
   s_shoe_bitmap_layer = bitmap_layer_create(GRect(8, 94, 24, 12));
   bitmap_layer_set_bitmap(s_shoe_bitmap_layer, s_shoe_bitmap);
@@ -454,7 +472,7 @@ static void main_window_load(Window *window) {
   text_layer_set_font(s_steps_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
   text_layer_set_text(s_steps_layer, "");
   layer_add_child(window_layer, text_layer_get_layer(s_steps_layer));
-  
+  #endif
   s_date_layer = text_layer_create(GRect(0, 18, 144, 34));
   text_layer_set_text_color(s_date_layer, GColorYellow);
   text_layer_set_background_color(s_date_layer, GColorClear);
@@ -464,12 +482,18 @@ static void main_window_load(Window *window) {
   s_time_layer = text_layer_create(GRect(0, 30, 144, 55));
   text_layer_set_text_color(s_time_layer, GColorWhite);
   text_layer_set_background_color(s_time_layer, GColorClear);
+  // fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD)
   text_layer_set_font(s_time_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_52)));
   text_layer_set_text_alignment(s_time_layer, GTextAlignmentCenter);
 
   s_seconds_layer = text_layer_create(GRect(100, 80, 50, 40));
+  #if defined(PBL_BW)
+  text_layer_set_text_color(s_seconds_layer, GColorWhite);
+  #else
   text_layer_set_text_color(s_seconds_layer, GColorOrange);
+  #endif
   text_layer_set_background_color(s_seconds_layer, GColorClear);
+  // fonts_get_system_font(FONT_KEY_BITHAM_34_MEDIUM_NUMBERS)
   text_layer_set_font(s_seconds_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_32)));
   
   for (int week=2;week>=0;week--){
@@ -534,15 +558,18 @@ static void main_window_unload(Window *window) {
   text_layer_destroy(s_date_layer);
   text_layer_destroy(s_time_layer);
   text_layer_destroy(s_seconds_layer);
-  text_layer_destroy(s_steps_layer);
   
   gbitmap_destroy(s_battery_bitmap);
   gbitmap_destroy(s_bluetooth_bitmap);
-  gbitmap_destroy(s_shoe_bitmap);
   bitmap_layer_destroy(s_battery_bitmap_layer);
   bitmap_layer_destroy(s_bluetooth_bitmap_layer);
+
+  #if defined(PBL_HEALTH)
+  text_layer_destroy(s_steps_layer);
+  gbitmap_destroy(s_shoe_bitmap);
   bitmap_layer_destroy(s_shoe_bitmap_layer);
-  
+  #endif
+
   // destroy calendar
   for (int week=2;week>=0;week--){
     for (int day=0; day<7; day++) {
