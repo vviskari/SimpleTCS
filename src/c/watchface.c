@@ -53,9 +53,8 @@ const uint32_t BATT_HISTORY_KEY = 1;
 const uint32_t BATT_CHARGING_KEY = 2;
 
 static void estimate_battery(BatteryChargeState charge_state) {
-
   time_t now = time(NULL);
-
+  
   // Store current charging state
   bool lastCharging = false;
   if (persist_exists(BATT_CHARGING_KEY)) {
@@ -65,7 +64,7 @@ static void estimate_battery(BatteryChargeState charge_state) {
 
   // skip everything, if charging
   if (charge_state.is_plugged) {
-    //APP_LOG(APP_LOG_LEVEL_INFO, "Charging, skip");
+    // APP_LOG(APP_LOG_LEVEL_INFO, "Charging, skip");
     return;
   }
   
@@ -89,27 +88,29 @@ static void estimate_battery(BatteryChargeState charge_state) {
   }
   
   if (history.timestamp == 0) {
-    // APP_LOG(APP_LOG_LEVEL_INFO, "No old history. return");
+    APP_LOG(APP_LOG_LEVEL_INFO, "No old history. return");
     return;
   }
-  
-  if (history.last_estimated == charge_state.charge_percent) {
-    // APP_LOG(APP_LOG_LEVEL_INFO, "Charge same as last time. return");
-    return;
-  }
-  
+
   int historyTimeHours = history.timestamp/60/60;
   int historyChargePercent = history.charge*1000;
-  int currentTimeHours = (int)now/60/60;
-  int currentChargePercent = charge_state.charge_percent*1000;  
 
-  if (charge_state.charge_percent < 90) {
-    // skip 100 and 90 battery levels, not reliable
-    // calculate slope for current charge against history charge (weighted)
-    history.slope = (2*history.slope + (currentChargePercent-historyChargePercent)/(currentTimeHours-historyTimeHours)) / 3;
-    history.last_estimated = charge_state.charge_percent;
+  if (history.last_estimated != charge_state.charge_percent && charge_state.charge_percent < 90) {
+    // new estimation
+    // skip battery levels 100 and 90, they are not reliable
+    int currentTimeHours = (int)now/60/60;
+    int currentChargePercent = charge_state.charge_percent*1000;  
+    int lastSlope = history.slope;
+    
+    if (charge_state.charge_percent < 90) {
+      // skip 100 and 90 battery levels, not reliable
+      // calculate slope for current charge against history charge (weighted)
+      history.slope = (2*history.slope + (currentChargePercent-historyChargePercent)/(currentTimeHours-historyTimeHours)) / 3;
+      history.last_estimated = charge_state.charge_percent;
+    }
+    APP_LOG(APP_LOG_LEVEL_INFO, "Adjusted estimate. slope %d -> %d", lastSlope, history.slope);
   }
-  
+    
   // estimated time when battery is 0
   int estimatedBatteryLife = (-historyChargePercent + history.slope * historyTimeHours) / history.slope*60*60;
   APP_LOG(APP_LOG_LEVEL_INFO, "Estimated battery life until %d", estimatedBatteryLife);
