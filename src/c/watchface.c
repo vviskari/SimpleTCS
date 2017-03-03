@@ -266,7 +266,8 @@ static void handle_battery(BatteryChargeState charge_state) {
   
   Layer *window_layer = window_get_root_layer(s_main_window);
   text_layer_destroy(s_box);
-  s_box = text_layer_create(GRect(96, 4+10-charge_state.charge_percent/10, 6, charge_state.charge_percent/10));
+  int width = 22*charge_state.charge_percent/100;
+  s_box = text_layer_create(GRect(106-width, 4, width, 9));
   layer_add_child(window_layer, text_layer_get_layer(s_box));
 
   if (charge_state.is_charging) {
@@ -329,7 +330,7 @@ static void handle_bluetooth(bool connected) {
       vibes_enqueue_custom_pattern(pat);
     }
   }
-  s_bluetooth_bitmap_layer = bitmap_layer_create(GRect(3, 4, 8, 13));
+  s_bluetooth_bitmap_layer = bitmap_layer_create(GRect(3, 2, 8, 13));
   bitmap_layer_set_bitmap(s_bluetooth_bitmap_layer, s_bluetooth_bitmap);
   layer_add_child(window_layer, bitmap_layer_get_layer(s_bluetooth_bitmap_layer));
 }
@@ -446,20 +447,21 @@ static void main_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_frame(window_layer);
 
-  s_connection_layer = text_layer_create(GRect(16, -3, bounds.size.w, 18));
+  s_connection_layer = text_layer_create(GRect(16, -4, bounds.size.w, 18));
   text_layer_set_text_color(s_connection_layer, GColorWhite);
   text_layer_set_background_color(s_connection_layer, GColorClear);
   text_layer_set_font(s_connection_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
   handle_bluetooth(connection_service_peek_pebble_app_connection());
 
-  s_battery_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BAT);
-  s_battery_bitmap_layer = bitmap_layer_create(GRect(95, 2, 8, 13));
+  s_battery_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BAT2);
+  s_battery_bitmap_layer = bitmap_layer_create(GRect(80, 2, 28, 13));
   bitmap_layer_set_bitmap(s_battery_bitmap_layer, s_battery_bitmap);
   layer_add_child(window_layer, bitmap_layer_get_layer(s_battery_bitmap_layer));
 
-  s_battery_layer = text_layer_create(GRect(106, -3, bounds.size.w, 18));
+  s_battery_layer = text_layer_create(GRect(109, -4, 34, 18));
   text_layer_set_text_color(s_battery_layer, GColorWhite);
   text_layer_set_background_color(s_battery_layer, GColorClear);
+  text_layer_set_text_alignment(s_battery_layer, GTextAlignmentRight);
   text_layer_set_font(s_battery_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
   #if defined(PBL_HEALTH)
   s_shoe_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_SHOE);
