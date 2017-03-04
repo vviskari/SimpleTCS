@@ -1,6 +1,8 @@
 {
     "author": "ville.viskari@gmail.com",
-    "dependencies": {},
+    "dependencies": {
+        "pebble-generic-weather": "^1.1.6"
+    },
     "keywords": [],
     "name": "simple-tcs",
     "pebble": {
@@ -13,12 +15,6 @@
         "projectType": "native",
         "resources": {
             "media": [
-                {
-                    "file": "images/bat_2.png",
-                    "name": "IMAGE_BAT2",
-                    "targetPlatforms": null,
-                    "type": "bitmap"
-                },
                 {
                     "file": "images/shoe.png",
                     "menuIcon": true,
@@ -45,6 +41,12 @@
                     "type": "png"
                 },
                 {
+                    "file": "images/bat_2.png",
+                    "name": "IMAGE_BAT2",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
                     "file": "images/bat.png",
                     "name": "IMAGE_BAT",
                     "targetPlatforms": null,
@@ -53,14 +55,14 @@
                 {
                     "characterRegex": "[.0-9:]",
                     "file": "fonts/OpenSans-Regular.ttf",
-                    "name": "FONT_OPEN_32",
+                    "name": "FONT_OPEN_52",
                     "targetPlatforms": null,
                     "type": "font"
                 },
                 {
                     "characterRegex": "[.0-9:]",
                     "file": "fonts/OpenSans-Regular.ttf",
-                    "name": "FONT_OPEN_52",
+                    "name": "FONT_OPEN_32",
                     "targetPlatforms": null,
                     "type": "font"
                 }
@@ -77,5 +79,5 @@
             "watchface": true
         }
     },
-    "version": "1.3.0"
+    "version": "1.4.0"
 }

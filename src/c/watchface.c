@@ -34,7 +34,7 @@ static int secondticks = 0;
 static char weekdaynumber[] = "0";
 
 char weekdayname[6][7][15] = {
-  {"Monday","Tuesday","Wednesday","Thursday","Friday","Satuday","Sunday"},
+  {"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"},
   {"Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"},
   {"lunes","martes","miércoles","jueves","viernes","sábado","domingo"},
   {"Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"},
@@ -378,9 +378,9 @@ static void handle_time(struct tm* tick_time, TimeUnits units_changed) {
   static int loc = 0;
   if (strcmp("de_DE", sys_locale) == 0) {
     loc=1;
-  } else if (strcmp("fr_FR", sys_locale) == 0) {
-    loc=2;
   } else if (strcmp("es_ES", sys_locale) == 0) {
+    loc=2;
+  } else if (strcmp("fr_FR", sys_locale) == 0) {
     loc=3;
   } else if (strcmp("it_IT", sys_locale) == 0) {
     loc=4;
