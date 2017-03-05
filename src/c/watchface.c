@@ -6,6 +6,10 @@
 //
 
 #include <pebble.h>
+
+#include <pebble-generic-weather/pebble-generic-weather.h>
+#include <pebble-events/pebble-events.h>
+
 static Window *s_main_window;
 static TextLayer *s_connection_layer;
 static TextLayer *s_battery_layer;
@@ -16,6 +20,9 @@ static TextLayer *s_seconds_layer;
 static TextLayer *s_cal_array_layer[3][7];
 static TextLayer *s_bat_cal_bg_layer[3];
 static TextLayer *s_bat_cal_bat_layer[3];
+static TextLayer *s_weather_text_layer;
+static TextLayer *s_weather_icon_layer;
+static TextLayer *s_weather_loc_layer;
 
 static GBitmap *s_battery_bitmap;
 static GBitmap *s_bluetooth_bitmap;
@@ -51,6 +58,114 @@ typedef struct {
 
 const uint32_t BATT_HISTORY_KEY = 1;
 const uint32_t BATT_CHARGING_KEY = 2;
+const uint32_t WEATHER_KEY = 3;
+
+const char WEATHER_CLEAR = 'B';
+const char WEATHER_CLEAR_NIGHT = 'C';
+const char WEATHER_PART_CLOUD = 'H';
+const char WEATHER_PART_CLOUD_NIGHT = 'I';
+const char WEATHER_FOG = 'M';
+const char WEATHER_CLOUD = 'N';
+const char WEATHER_STORM = 'P';
+const char WEATHER_LIGHT_RAIN = 'Q';
+const char WEATHER_RAIN = 'R';
+const char WEATHER_SNOW = 'W';
+const char WEATHER_UNKNOWN = ')';
+
+static void render_weather(GenericWeatherInfo *info) {
+  if (!info) {
+    return;
+  }
+  APP_LOG(APP_LOG_LEVEL_INFO, "Weather, %s, %s, %d", info->name, info->description, info->temp_c);
+  static char s_temp_text[5];
+  snprintf(s_temp_text, sizeof(s_temp_text), "%d˚",  info->temp_c);  
+  text_layer_set_text(s_weather_text_layer, s_temp_text);
+  text_layer_set_text(s_weather_loc_layer, info->name);
+
+  char condition = WEATHER_UNKNOWN;
+  GColor weatherColor = GColorWhite;
+  
+  switch(info->condition) {
+    case GenericWeatherConditionClearSky:
+      condition = info->day ? WEATHER_CLEAR : WEATHER_CLEAR_NIGHT;
+      weatherColor = GColorYellow;
+      break;
+    case GenericWeatherConditionScatteredClouds:
+    case GenericWeatherConditionFewClouds:
+    case GenericWeatherConditionBrokenClouds:
+      condition = info->day ? WEATHER_PART_CLOUD : WEATHER_PART_CLOUD_NIGHT;
+      weatherColor = GColorLightGray;
+      break;
+    case GenericWeatherConditionRain:
+      condition = WEATHER_RAIN;
+      weatherColor = GColorLightGray;
+      break;
+    case GenericWeatherConditionShowerRain:
+      condition = WEATHER_LIGHT_RAIN;
+      break;
+    case GenericWeatherConditionThunderstorm:
+      condition = WEATHER_STORM;
+      break;
+    case GenericWeatherConditionSnow:
+      condition = WEATHER_SNOW;
+      weatherColor = GColorCyan;
+      break;
+    case GenericWeatherConditionMist:
+      condition = WEATHER_FOG;
+      break;
+    default:
+      condition = WEATHER_UNKNOWN;
+  }
+  
+  static char s_condition_text[2];
+  snprintf(s_condition_text, sizeof(s_condition_text), "%c",  condition);  
+  text_layer_set_text(s_weather_icon_layer, s_condition_text);
+  text_layer_set_text_color(s_weather_icon_layer, weatherColor);
+}
+
+static void weather_callback(GenericWeatherInfo *info, GenericWeatherStatus status) {
+  if (status == GenericWeatherStatusAvailable) {
+    generic_weather_save(WEATHER_KEY);
+    render_weather(info);
+  }
+}
+
+static void js_ready_handler(void *context) {
+  generic_weather_fetch(weather_callback);
+}
+
+static bool userIsSleeping() {
+  bool isSleeping = false;
+  #if defined(PBL_HEALTH)
+  // Get an activities mask
+  HealthActivityMask activities = health_service_peek_current_activities();
+  
+  // Determine which bits are set, and hence which activity is active
+  if(activities & HealthActivitySleep) {
+    isSleeping = true;
+  }
+  if (activities & HealthActivityRestfulSleep) {
+    isSleeping = true;
+  }
+  #endif
+  return isSleeping;
+}
+
+static void handle_weather(bool refresh) {
+  if (userIsSleeping()) {
+    return;
+  }
+  if (refresh) {
+    app_timer_register(3000, js_ready_handler, NULL);
+  } else {
+    GenericWeatherInfo *info = generic_weather_peek();
+    if (!info) {
+      app_timer_register(3000, js_ready_handler, NULL);
+    } else {
+      render_weather(info);
+    }
+  }
+}
 
 static void estimate_battery(BatteryChargeState charge_state) {
   time_t now = time(NULL);
@@ -244,23 +359,6 @@ static void drawcal() {
   }
 }
 
-static bool userIsSleeping() {
-  bool isSleeping = false;
-  #if defined(PBL_HEALTH)
-  // Get an activities mask
-  HealthActivityMask activities = health_service_peek_current_activities();
-  
-  // Determine which bits are set, and hence which activity is active
-  if(activities & HealthActivitySleep) {
-    isSleeping = true;
-  }
-  if (activities & HealthActivityRestfulSleep) {
-    isSleeping = true;
-  }
-  #endif
-  return isSleeping;
-}
-
 static void handle_battery(BatteryChargeState charge_state) {
   static char battery_text[] = "100%";
   
@@ -409,8 +507,8 @@ static void handle_time(struct tm* tick_time, TimeUnits units_changed) {
 static void handle_minute_tick(struct tm* tick_time, TimeUnits units_changed) {
   handle_time(tick_time, units_changed);
   
-  // Draw calendar every hour on the hour
   if (tick_time->tm_min == 0) {
+    // Draw calendar every hour on the hour
     drawcal();
     if (tick_time->tm_hour == 0) {
       // refresh battery stats at midnight
@@ -421,6 +519,10 @@ static void handle_minute_tick(struct tm* tick_time, TimeUnits units_changed) {
   if(tick_time->tm_min % 5 == 0) {
     handle_steps();
   }
+  // Update weather twice an hour
+  if(tick_time->tm_min % 30 == 0) {
+    handle_weather(true);
+  }
 }
 
 static void handle_second_tick(struct tm* tick_time, TimeUnits units_changed) {
@@ -430,10 +532,14 @@ static void handle_second_tick(struct tm* tick_time, TimeUnits units_changed) {
   static char s_seconds_text[] = "00";
   strftime(s_seconds_text, sizeof(s_seconds_text), "%S", tick_time);
   text_layer_set_text(s_seconds_layer, s_seconds_text);
-  
+
+  layer_set_hidden((Layer*) s_weather_text_layer, true);
+  layer_set_hidden((Layer*) s_seconds_layer, false);
   if (secondticks > 60) {
     tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
     text_layer_set_text(s_seconds_layer, "");
+    layer_set_hidden((Layer*) s_weather_text_layer, false);
+    layer_set_hidden((Layer*) s_seconds_layer, true);
     secondticks=0;
   }
 }
@@ -463,29 +569,16 @@ static void main_window_load(Window *window) {
   text_layer_set_background_color(s_battery_layer, GColorClear);
   text_layer_set_text_alignment(s_battery_layer, GTextAlignmentRight);
   text_layer_set_font(s_battery_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
-  #if defined(PBL_HEALTH)
-  s_shoe_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_SHOE);
-  s_shoe_bitmap_layer = bitmap_layer_create(GRect(8, 94, 24, 12));
-  bitmap_layer_set_bitmap(s_shoe_bitmap_layer, s_shoe_bitmap);
-  layer_add_child(window_layer, bitmap_layer_get_layer(s_shoe_bitmap_layer));
-    
-  s_steps_layer = text_layer_create(GRect(42, 89, bounds.size.w, 18));
-  text_layer_set_text_color(s_steps_layer, GColorWhite);
-  text_layer_set_background_color(s_steps_layer, GColorClear);
-  text_layer_set_font(s_steps_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-  text_layer_set_text(s_steps_layer, "");
-  layer_add_child(window_layer, text_layer_get_layer(s_steps_layer));
-  #endif
-  s_date_layer = text_layer_create(GRect(0, 18, 144, 34));
+
+  s_date_layer = text_layer_create(GRect(0, 16, 144, 34));
   text_layer_set_text_color(s_date_layer, GColorYellow);
   text_layer_set_background_color(s_date_layer, GColorClear);
   text_layer_set_font(s_date_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
   text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
 
-  s_time_layer = text_layer_create(GRect(0, 30, 144, 55));
+  s_time_layer = text_layer_create(GRect(0, 28, 144, 55));
   text_layer_set_text_color(s_time_layer, GColorWhite);
   text_layer_set_background_color(s_time_layer, GColorClear);
-  // fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD)
   text_layer_set_font(s_time_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_52)));
   text_layer_set_text_alignment(s_time_layer, GTextAlignmentCenter);
 
@@ -496,8 +589,9 @@ static void main_window_load(Window *window) {
   text_layer_set_text_color(s_seconds_layer, GColorOrange);
   #endif
   text_layer_set_background_color(s_seconds_layer, GColorClear);
-  // fonts_get_system_font(FONT_KEY_BITHAM_34_MEDIUM_NUMBERS)
+
   text_layer_set_font(s_seconds_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_32)));
+  layer_set_hidden((Layer *) s_seconds_layer, true);
   
   for (int week=2;week>=0;week--){
     for (int day=0; day<7; day++) {
@@ -523,7 +617,42 @@ static void main_window_load(Window *window) {
   s_box = text_layer_create(GRect(0, 0, 1, 1));
   text_layer_set_background_color(s_box, GColorRed);
   layer_add_child(window_layer, text_layer_get_layer(s_box));
-  
+
+  #if defined(PBL_HEALTH)
+  s_steps_layer = text_layer_create(GRect(0, 96, 50, 18));
+  text_layer_set_text_color(s_steps_layer, GColorWhite);
+  text_layer_set_background_color(s_steps_layer, GColorClear);
+  text_layer_set_text_alignment(s_steps_layer, GTextAlignmentCenter);
+  text_layer_set_font(s_steps_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+  text_layer_set_text(s_steps_layer, "");
+  layer_add_child(window_layer, text_layer_get_layer(s_steps_layer));
+
+  s_shoe_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_SHOE);
+  s_shoe_bitmap_layer = bitmap_layer_create(GRect(12, 88, 24, 12));
+  bitmap_layer_set_bitmap(s_shoe_bitmap_layer, s_shoe_bitmap);
+  layer_add_child(window_layer, bitmap_layer_get_layer(s_shoe_bitmap_layer));  
+  #endif
+
+  s_weather_icon_layer = text_layer_create(GRect(50, 85, 32, 35));
+  text_layer_set_text_color(s_weather_icon_layer, GColorWhite);
+  text_layer_set_background_color(s_weather_icon_layer, GColorClear);
+  text_layer_set_font(s_weather_icon_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_WEATHER_30)));
+  layer_add_child(window_layer, text_layer_get_layer(s_weather_icon_layer));
+
+  s_weather_text_layer = text_layer_create(GRect(95, 83, 75, 40));
+  text_layer_set_text_color(s_weather_text_layer, GColorWhite);
+  text_layer_set_background_color(s_weather_text_layer, GColorClear);
+  text_layer_set_font(s_weather_text_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_24)));
+  text_layer_set_text_alignment(s_weather_text_layer, GTextAlignmentLeft);
+  layer_add_child(window_layer, text_layer_get_layer(s_weather_text_layer));
+
+  s_weather_loc_layer = text_layer_create(GRect(80, 108, 64, 10));
+  text_layer_set_text_color(s_weather_loc_layer, GColorWhite);
+  text_layer_set_background_color(s_weather_loc_layer, GColorClear);
+  text_layer_set_font(s_weather_loc_layer, fonts_get_system_font(FONT_KEY_GOTHIC_09));
+  text_layer_set_text_alignment(s_weather_loc_layer, GTextAlignmentCenter);
+  layer_add_child(window_layer, text_layer_get_layer(s_weather_loc_layer));
+
   // Ensures time is displayed immediately (will break if NULL tick event accessed).
   // (This is why it's a good idea to have a separate routine to do the update itself.)
   time_t now = time(NULL);
@@ -546,6 +675,8 @@ static void main_window_load(Window *window) {
 
   handle_battery(battery_state_service_peek());
   handle_steps();
+  
+  handle_weather(false);
 }
 
 static void main_window_unload(Window *window) {
@@ -561,6 +692,9 @@ static void main_window_unload(Window *window) {
   text_layer_destroy(s_date_layer);
   text_layer_destroy(s_time_layer);
   text_layer_destroy(s_seconds_layer);
+  text_layer_destroy(s_weather_loc_layer);
+  text_layer_destroy(s_weather_text_layer);
+  text_layer_destroy(s_weather_icon_layer);
   
   gbitmap_destroy(s_battery_bitmap);
   gbitmap_destroy(s_bluetooth_bitmap);
@@ -585,6 +719,12 @@ static void main_window_unload(Window *window) {
 
 static void init() {
   s_main_window = window_create();
+
+  generic_weather_init();
+  generic_weather_set_provider(GenericWeatherProviderYahooWeather);
+  events_app_message_open();
+  generic_weather_load(WEATHER_KEY);
+
   window_set_background_color(s_main_window, GColorBlack);
   window_set_window_handlers(s_main_window, (WindowHandlers) {
     .load = main_window_load,
@@ -594,6 +734,7 @@ static void init() {
 }
 
 static void deinit() {
+  generic_weather_deinit();
   window_destroy(s_main_window);
 }
 

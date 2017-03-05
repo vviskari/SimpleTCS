@@ -16,6 +16,13 @@
         "resources": {
             "media": [
                 {
+                    "characterRegex": "[BCGHIMNPQRW)]",
+                    "file": "fonts/meteocons-webfont.ttf",
+                    "name": "FONT_WEATHER_30",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
+                {
                     "file": "images/shoe.png",
                     "menuIcon": true,
                     "name": "IMAGE_SHOE",
@@ -53,16 +60,23 @@
                     "type": "png"
                 },
                 {
-                    "characterRegex": "[.0-9:]",
+                    "characterRegex": "[.0-9:\u02da-]",
                     "file": "fonts/OpenSans-Regular.ttf",
-                    "name": "FONT_OPEN_52",
+                    "name": "FONT_OPEN_24",
                     "targetPlatforms": null,
                     "type": "font"
                 },
                 {
-                    "characterRegex": "[.0-9:]",
+                    "characterRegex": "[.0-9:\u02da-]",
                     "file": "fonts/OpenSans-Regular.ttf",
                     "name": "FONT_OPEN_32",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
+                {
+                    "characterRegex": "[.0-9:\u02da-]",
+                    "file": "fonts/OpenSans-Regular.ttf",
+                    "name": "FONT_OPEN_52",
                     "targetPlatforms": null,
                     "type": "font"
                 }
@@ -79,5 +93,5 @@
             "watchface": true
         }
     },
-    "version": "1.4.0"
+    "version": "1.6.0"
 }
