@@ -534,11 +534,13 @@ static void handle_second_tick(struct tm* tick_time, TimeUnits units_changed) {
   text_layer_set_text(s_seconds_layer, s_seconds_text);
 
   layer_set_hidden((Layer*) s_weather_text_layer, true);
+  layer_set_hidden((Layer*) s_weather_loc_layer, true);
   layer_set_hidden((Layer*) s_seconds_layer, false);
   if (secondticks > 60) {
     tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
     text_layer_set_text(s_seconds_layer, "");
     layer_set_hidden((Layer*) s_weather_text_layer, false);
+    layer_set_hidden((Layer*) s_weather_loc_layer, false);
     layer_set_hidden((Layer*) s_seconds_layer, true);
     secondticks=0;
   }
@@ -553,7 +555,7 @@ static void main_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_frame(window_layer);
 
-  s_connection_layer = text_layer_create(GRect(16, -4, bounds.size.w, 18));
+  s_connection_layer = text_layer_create(GRect(16, -5, bounds.size.w, 18));
   text_layer_set_text_color(s_connection_layer, GColorWhite);
   text_layer_set_background_color(s_connection_layer, GColorClear);
   text_layer_set_font(s_connection_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
@@ -633,17 +635,17 @@ static void main_window_load(Window *window) {
   layer_add_child(window_layer, bitmap_layer_get_layer(s_shoe_bitmap_layer));  
   #endif
 
-  s_weather_icon_layer = text_layer_create(GRect(50, 85, 32, 35));
+  s_weather_icon_layer = text_layer_create(GRect(53, 85, 32, 35));
   text_layer_set_text_color(s_weather_icon_layer, GColorWhite);
   text_layer_set_background_color(s_weather_icon_layer, GColorClear);
   text_layer_set_font(s_weather_icon_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_WEATHER_30)));
   layer_add_child(window_layer, text_layer_get_layer(s_weather_icon_layer));
 
-  s_weather_text_layer = text_layer_create(GRect(95, 83, 75, 40));
+  s_weather_text_layer = text_layer_create(GRect(90, 83, 55, 40));
   text_layer_set_text_color(s_weather_text_layer, GColorWhite);
   text_layer_set_background_color(s_weather_text_layer, GColorClear);
   text_layer_set_font(s_weather_text_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_24)));
-  text_layer_set_text_alignment(s_weather_text_layer, GTextAlignmentLeft);
+  text_layer_set_text_alignment(s_weather_text_layer, GTextAlignmentCenter);
   layer_add_child(window_layer, text_layer_get_layer(s_weather_text_layer));
 
   s_weather_loc_layer = text_layer_create(GRect(80, 108, 64, 10));
