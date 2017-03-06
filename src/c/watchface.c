@@ -70,6 +70,7 @@ const char WEATHER_STORM = 'P';
 const char WEATHER_LIGHT_RAIN = 'Q';
 const char WEATHER_RAIN = 'R';
 const char WEATHER_SNOW = 'W';
+const char WEATHER_WIND = 'F';
 const char WEATHER_UNKNOWN = ')';
 
 static void render_weather(GenericWeatherInfo *info) {
@@ -92,8 +93,11 @@ static void render_weather(GenericWeatherInfo *info) {
       break;
     case GenericWeatherConditionScatteredClouds:
     case GenericWeatherConditionFewClouds:
-    case GenericWeatherConditionBrokenClouds:
       condition = info->day ? WEATHER_PART_CLOUD : WEATHER_PART_CLOUD_NIGHT;
+      weatherColor = GColorYellow;
+      break;
+    case GenericWeatherConditionBrokenClouds:
+      condition = WEATHER_CLOUD;
       weatherColor = GColorLightGray;
       break;
     case GenericWeatherConditionRain:
@@ -113,10 +117,12 @@ static void render_weather(GenericWeatherInfo *info) {
     case GenericWeatherConditionMist:
       condition = WEATHER_FOG;
       break;
+    case GenericWeatherConditionWind:
+      condition = WEATHER_WIND;
+      break;
     default:
       condition = WEATHER_UNKNOWN;
   }
-  
   static char s_condition_text[2];
   snprintf(s_condition_text, sizeof(s_condition_text), "%c",  condition);  
   text_layer_set_text(s_weather_icon_layer, s_condition_text);

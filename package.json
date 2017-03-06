@@ -1,7 +1,7 @@
 {
     "author": "ville.viskari@gmail.com",
     "dependencies": {
-        "pebble-generic-weather": "^1.1.6"
+        "pebble-generic-weather": "https://builds.cloudpebble.net/7b471acf-42cd-41a7-aa8d-fa19a78fc6cc/package.tar.gz"
     },
     "keywords": [],
     "name": "simple-tcs",
@@ -53,7 +53,7 @@
                     "type": "png"
                 },
                 {
-                    "characterRegex": "[BCGHIMNPQRW)]",
+                    "characterRegex": "[BCFGHIMNPQRW)]",
                     "file": "fonts/meteocons-webfont.ttf",
                     "name": "FONT_WEATHER_30",
                     "targetPlatforms": null,
@@ -62,7 +62,7 @@
                 {
                     "characterRegex": "[.0-9:\u02da-]",
                     "file": "fonts/OpenSans-Regular.ttf",
-                    "name": "FONT_OPEN_52",
+                    "name": "FONT_OPEN_24",
                     "targetPlatforms": null,
                     "type": "font"
                 },
@@ -76,7 +76,7 @@
                 {
                     "characterRegex": "[.0-9:\u02da-]",
                     "file": "fonts/OpenSans-Regular.ttf",
-                    "name": "FONT_OPEN_24",
+                    "name": "FONT_OPEN_52",
                     "targetPlatforms": null,
                     "type": "font"
                 }
@@ -93,5 +93,5 @@
             "watchface": true
         }
     },
-    "version": "1.7.0"
+    "version": "1.8.0"
 }
