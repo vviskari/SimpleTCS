@@ -77,7 +77,7 @@ static void render_weather(GenericWeatherInfo *info) {
   if (!info) {
     return;
   }
-  APP_LOG(APP_LOG_LEVEL_INFO, "Weather, %s, %s, %d", info->name, info->description, info->temp_c);
+  //APP_LOG(APP_LOG_LEVEL_INFO, "Weather, %s, %s, %d", info->name, info->description, info->temp_c);
   static char s_temp_text[5];
   snprintf(s_temp_text, sizeof(s_temp_text), "%d˚",  info->temp_c);  
   text_layer_set_text(s_weather_text_layer, s_temp_text);
@@ -133,6 +133,9 @@ static void weather_callback(GenericWeatherInfo *info, GenericWeatherStatus stat
   if (status == GenericWeatherStatusAvailable) {
     generic_weather_save(WEATHER_KEY);
     render_weather(info);
+  } else {
+    // load old state
+    generic_weather_load(WEATHER_KEY);
   }
 }
 
@@ -158,10 +161,7 @@ static bool userIsSleeping() {
 }
 
 static void handle_weather(bool refresh) {
-  if (userIsSleeping()) {
-    return;
-  }
-  if (refresh) {
+  if (refresh && !userIsSleeping()) {
     app_timer_register(3000, js_ready_handler, NULL);
   } else {
     GenericWeatherInfo *info = generic_weather_peek();
@@ -209,7 +209,7 @@ static void estimate_battery(BatteryChargeState charge_state) {
   }
   
   if (history.timestamp == 0) {
-    APP_LOG(APP_LOG_LEVEL_INFO, "No old history. return");
+    //APP_LOG(APP_LOG_LEVEL_INFO, "No old history. return");
     return;
   }
 
@@ -229,12 +229,12 @@ static void estimate_battery(BatteryChargeState charge_state) {
       history.slope = (2*history.slope + (currentChargePercent-historyChargePercent)/(currentTimeHours-historyTimeHours)) / 3;
       history.last_estimated = charge_state.charge_percent;
     }
-    APP_LOG(APP_LOG_LEVEL_INFO, "Adjusted estimate. slope %d -> %d", lastSlope, history.slope);
+    //APP_LOG(APP_LOG_LEVEL_INFO, "Adjusted estimate. slope %d -> %d", lastSlope, history.slope);
   }
     
   // estimated time when battery is 0
   int estimatedBatteryLife = (-historyChargePercent + history.slope * historyTimeHours) / history.slope*60*60;
-  APP_LOG(APP_LOG_LEVEL_INFO, "Estimated battery life until %d", estimatedBatteryLife);
+  //APP_LOG(APP_LOG_LEVEL_INFO, "Estimated battery life until %d", estimatedBatteryLife);
 
   persist_write_data(BATT_HISTORY_KEY, &history, sizeof(BatteryHistory));
 
@@ -456,14 +456,14 @@ static void handle_steps() {
     
     if(stepsAvailable & averageAvailable & HealthServiceAccessibilityMaskAvailable) {
       int stepsToday = (int)health_service_sum_today(metric);
-      APP_LOG(APP_LOG_LEVEL_INFO, "Steps data available: %d", stepsToday);
+      //APP_LOG(APP_LOG_LEVEL_INFO, "Steps data available: %d", stepsToday);
 
       snprintf(s_steps_text, sizeof(s_steps_text), "%d", stepsToday);    
       
       text_layer_set_text_color(s_steps_layer, GColorWhite);
       #if defined(PBL_COLOR)
       int average = (int) health_service_sum_averaged(metric, start, end, scope);
-      APP_LOG(APP_LOG_LEVEL_INFO, "Average step count: %d steps", (int)average);
+      //APP_LOG(APP_LOG_LEVEL_INFO, "Average step count: %d steps", (int)average);
       int diff = 100*stepsToday/average;
       if (diff < 60) {
         text_layer_set_text_color(s_steps_layer, GColorOrange);
@@ -478,7 +478,7 @@ static void handle_steps() {
 }
 
 static void handle_time(struct tm* tick_time, TimeUnits units_changed) {
-    char *sys_locale = setlocale(LC_ALL, "");
+  char *sys_locale = setlocale(LC_ALL, "");
   static int loc = 0;
   if (strcmp("de_DE", sys_locale) == 0) {
     loc=1;
@@ -572,7 +572,7 @@ static void main_window_load(Window *window) {
   bitmap_layer_set_bitmap(s_battery_bitmap_layer, s_battery_bitmap);
   layer_add_child(window_layer, bitmap_layer_get_layer(s_battery_bitmap_layer));
 
-  s_battery_layer = text_layer_create(GRect(109, -4, 34, 18));
+  s_battery_layer = text_layer_create(GRect(109, -4, 36, 18));
   text_layer_set_text_color(s_battery_layer, GColorWhite);
   text_layer_set_background_color(s_battery_layer, GColorClear);
   text_layer_set_text_alignment(s_battery_layer, GTextAlignmentRight);
