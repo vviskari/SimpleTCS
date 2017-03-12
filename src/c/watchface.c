@@ -38,6 +38,10 @@ static TextLayer *s_steps_layer;
 const int weekSeconds = 60*60*24*7;
 static bool lastconnected = true;
 static int secondticks = 0;
+static int shakes = 0;
+static bool show_seconds = false;
+static int shaketicks = 0;
+static int MAX_SECONDS = 20;
 static char weekdaynumber[] = "0";
 
 char weekdayname[6][7][15] = {
@@ -533,27 +537,42 @@ static void handle_minute_tick(struct tm* tick_time, TimeUnits units_changed) {
 
 static void handle_second_tick(struct tm* tick_time, TimeUnits units_changed) {
   secondticks++;
+  shaketicks++;
   handle_time(tick_time, units_changed);
 
-  static char s_seconds_text[] = "00";
-  strftime(s_seconds_text, sizeof(s_seconds_text), "%S", tick_time);
-  text_layer_set_text(s_seconds_layer, s_seconds_text);
-
-  layer_set_hidden((Layer*) s_weather_text_layer, true);
-  layer_set_hidden((Layer*) s_weather_loc_layer, true);
-  layer_set_hidden((Layer*) s_seconds_layer, false);
-  if (secondticks > 60) {
-    tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
+  if (shaketicks % 3 == 0 && shakes == 1) {
+    shaketicks = shakes = 0;
+  } else if (shakes > 1) {
+    shakes = 0;
+    show_seconds = !show_seconds;
+    secondticks= show_seconds ? 1 : MAX_SECONDS+1;    
+  }
+  
+  if (show_seconds && secondticks <= MAX_SECONDS) {
+    static char s_seconds_text[] = "00";
+    strftime(s_seconds_text, sizeof(s_seconds_text), "%S", tick_time);
+    text_layer_set_text(s_seconds_layer, s_seconds_text);
+  
+    layer_set_hidden((Layer*) s_weather_text_layer, true);
+    layer_set_hidden((Layer*) s_weather_loc_layer, true);
+    layer_set_hidden((Layer*) s_seconds_layer, false);
+  } else {
     text_layer_set_text(s_seconds_layer, "");
     layer_set_hidden((Layer*) s_weather_text_layer, false);
     layer_set_hidden((Layer*) s_weather_loc_layer, false);
-    layer_set_hidden((Layer*) s_seconds_layer, true);
-    secondticks=0;
+    layer_set_hidden((Layer*) s_seconds_layer, true);    
   }
+
+  if (secondticks > MAX_SECONDS) {
+    secondticks=0;
+    show_seconds = false;
+    tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
+  }  
 }
 
 static void tap_handler(AccelAxisType axis, int32_t direction) {
-  secondticks=0;
+  shakes = (shakes+1) % 3;
+  shaketicks = 0;
   tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
 }
 
