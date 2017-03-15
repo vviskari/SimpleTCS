@@ -225,15 +225,10 @@ static void estimate_battery(BatteryChargeState charge_state) {
     // skip battery levels 100 and 90, they are not reliable
     int currentTimeHours = (int)now/60/60;
     int currentChargePercent = charge_state.charge_percent*1000;  
-    int lastSlope = history.slope;
     
-    if (charge_state.charge_percent < 90) {
-      // skip 100 and 90 battery levels, not reliable
-      // calculate slope for current charge against history charge (weighted)
-      history.slope = (2*history.slope + (currentChargePercent-historyChargePercent)/(currentTimeHours-historyTimeHours)) / 3;
-      history.last_estimated = charge_state.charge_percent;
-    }
-    //APP_LOG(APP_LOG_LEVEL_INFO, "Adjusted estimate. slope %d -> %d", lastSlope, history.slope);
+    // calculate slope for current charge against history charge (weighted)
+    history.slope = (2*history.slope + (currentChargePercent-historyChargePercent)/(currentTimeHours-historyTimeHours)) / 3;
+    history.last_estimated = charge_state.charge_percent;
   }
     
   // estimated time when battery is 0
