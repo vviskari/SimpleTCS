@@ -495,7 +495,11 @@ static void handle_time(struct tm* tick_time, TimeUnits units_changed) {
 
   // Time
   static char s_time_text[] = "00:00";
-  strftime(s_time_text, sizeof(s_time_text), "%H:%M", tick_time);
+  if (clock_is_24h_style()) {
+    strftime(s_time_text, sizeof(s_time_text), "%H:%M", tick_time);    
+  } else {
+    strftime(s_time_text, sizeof(s_time_text), "%I:%M", tick_time);
+  }
   text_layer_set_text(s_time_layer, s_time_text);
   
   // Time and date

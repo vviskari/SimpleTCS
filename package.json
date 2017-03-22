@@ -62,7 +62,7 @@
                 {
                     "characterRegex": "[.0-9:\u02da-]",
                     "file": "fonts/OpenSans-Regular.ttf",
-                    "name": "FONT_OPEN_24",
+                    "name": "FONT_OPEN_52",
                     "targetPlatforms": null,
                     "type": "font"
                 },
@@ -76,7 +76,7 @@
                 {
                     "characterRegex": "[.0-9:\u02da-]",
                     "file": "fonts/OpenSans-Regular.ttf",
-                    "name": "FONT_OPEN_52",
+                    "name": "FONT_OPEN_24",
                     "targetPlatforms": null,
                     "type": "font"
                 }
@@ -93,5 +93,5 @@
             "watchface": true
         }
     },
-    "version": "1.10.0"
+    "version": "1.11.0"
 }
