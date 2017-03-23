@@ -1,17 +1,24 @@
 {
     "author": "ville.viskari@gmail.com",
     "dependencies": {
+        "pebble-clay": "1.0.4",
         "pebble-generic-weather": "https://builds.cloudpebble.net/729e5e02-f694-4b3c-8aea-002a30a67ec6/package.tar.gz"
     },
     "keywords": [],
     "name": "simple-tcs",
     "pebble": {
         "capabilities": [
+            "configurable",
             "health"
         ],
         "displayName": "Simple TCS",
         "enableMultiJS": true,
-        "messageKeys": [],
+        "messageKeys": [
+            "wsd",
+            "wp",
+            "wak",
+            "wt"
+        ],
         "projectType": "native",
         "resources": {
             "media": [
@@ -93,5 +100,5 @@
             "watchface": true
         }
     },
-    "version": "1.11.0"
+    "version": "1.12.0"
 }

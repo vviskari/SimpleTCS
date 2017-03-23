@@ -22,6 +22,7 @@ static TextLayer *s_bat_cal_bg_layer[3];
 static TextLayer *s_bat_cal_bat_layer[3];
 static TextLayer *s_weather_text_layer;
 static TextLayer *s_weather_icon_layer;
+static TextLayer *s_weather_unit_layer;
 static TextLayer *s_weather_loc_layer;
 
 static GBitmap *s_battery_bitmap;
@@ -41,7 +42,7 @@ static int secondticks = 0;
 static int shakes = 0;
 static bool show_seconds = false;
 static int shaketicks = 0;
-static int MAX_SECONDS = 20;
+static int MAX_SECONDS = 60;
 static char weekdaynumber[] = "0";
 
 char weekdayname[6][7][15] = {
@@ -60,9 +61,19 @@ typedef struct {
   int slope;
 } BatteryHistory;
 
+typedef struct {
+  char weekStartDay;
+  char weatherTemp;
+  char weatherProvider;
+  char weatherApiKey[20];
+} Settings;
+
+static Settings settings;
+
 const uint32_t BATT_HISTORY_KEY = 1;
 const uint32_t BATT_CHARGING_KEY = 2;
 const uint32_t WEATHER_KEY = 3;
+const uint32_t SETTINGS_KEY = 4;
 
 const char WEATHER_CLEAR = 'B';
 const char WEATHER_CLEAR_NIGHT = 'C';
@@ -83,8 +94,17 @@ static void render_weather(GenericWeatherInfo *info) {
   }
   //APP_LOG(APP_LOG_LEVEL_INFO, "Weather, %s, %s, %d", info->name, info->description, info->temp_c);
   static char s_temp_text[5];
-  snprintf(s_temp_text, sizeof(s_temp_text), "%d˚",  info->temp_c);  
+  if (settings.weatherTemp == 'C') {
+    snprintf(s_temp_text, sizeof(s_temp_text), "%d˚",  info->temp_c);      
+  } else {
+    snprintf(s_temp_text, sizeof(s_temp_text), "%d˚",  info->temp_f);
+  }
   text_layer_set_text(s_weather_text_layer, s_temp_text);
+  
+  static char s_unit_text[2];
+  snprintf(s_unit_text, sizeof(s_unit_text), "%c", settings.weatherTemp);
+  text_layer_set_text(s_weather_unit_layer, s_unit_text);
+
   text_layer_set_text(s_weather_loc_layer, info->name);
 
   char condition = WEATHER_UNKNOWN;
@@ -144,6 +164,25 @@ static void weather_callback(GenericWeatherInfo *info, GenericWeatherStatus stat
 }
 
 static void js_ready_handler(void *context) {
+  switch(settings.weatherProvider) {
+    case 'y':
+      generic_weather_set_provider(GenericWeatherProviderYahooWeather);
+      break;
+    case 'o':
+      generic_weather_set_provider(GenericWeatherProviderOpenWeatherMap);
+      generic_weather_set_api_key(settings.weatherApiKey);
+      break;
+    case 'w':
+      generic_weather_set_provider(GenericWeatherProviderWeatherUnderground );
+      generic_weather_set_api_key(settings.weatherApiKey);
+      break;
+    case 'f':
+      generic_weather_set_provider(GenericWeatherProviderForecastIo);
+      generic_weather_set_api_key(settings.weatherApiKey);
+      break;
+    default:
+      generic_weather_set_provider(GenericWeatherProviderUnknown);
+  }
   generic_weather_fetch(weather_callback);
 }
 
@@ -244,7 +283,8 @@ static void estimate_battery(BatteryChargeState charge_state) {
   char weekdaynumber[2];
   strftime(weekdaynumber, 2, "%u", localtime(&now));
   struct tm *stm = localtime(&now);
-  int weekStart = now - (atoi(weekdaynumber)-1)*60*60*24 - stm->tm_hour*60*60 - stm->tm_min*60 - stm->tm_sec;
+  int offset = (settings.weekStartDay == 's') ? 0 : 1;
+  int weekStart = now - (atoi(weekdaynumber)-offset)*60*60*24 - stm->tm_hour*60*60 - stm->tm_min*60 - stm->tm_sec;
   
   Layer *window_layer = window_get_root_layer(s_main_window);
   text_layer_destroy(s_bat_cal_bat_layer[0]);
@@ -308,6 +348,19 @@ static void estimate_battery(BatteryChargeState charge_state) {
   }
 }
 
+static bool is_day_idx_weekend(int idx) {
+  if (settings.weekStartDay == 's') {    
+    if (idx%7 == 0 || idx%7 == 6) {
+      return true;
+    }
+  } else {
+    if (idx%7>=5) {
+      return true;
+    }    
+  }
+  return false;
+}
+
 static void drawcal() {
   static char monthdaynumber[3];
   char weekdaynumber[2];
@@ -320,20 +373,26 @@ static void drawcal() {
   static char week[3][7][3];
 
   int day_id = 0;
-  // iterate from weekday number 
-  for (int x = 1-atoi(weekdaynumber)-7; x < 14+1-atoi(weekdaynumber); x++){
+  int offset = (settings.weekStartDay=='s') ? 0 : 1;
+
+  // start from beginning of last week (depending if week starts on mon or sun)
+  for (int x = offset-atoi(weekdaynumber)-7; x < 14+offset-atoi(weekdaynumber); x++){
     // timestamp adjusted by x days
     time_t tt = time(NULL)+x*24*3600;
     struct tm *stm = localtime(&tt);
     if (day_id >= 14) {
-      if (day_id%7>=5) {
+      if (is_day_idx_weekend(day_id)) {
         text_layer_set_font(s_cal_array_layer[2][day_id-14], fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+      } else {
+        text_layer_set_font(s_cal_array_layer[2][day_id-14], fonts_get_system_font(FONT_KEY_GOTHIC_18));
       }
       strftime(week[2][day_id-14], 3, "%d", stm);
       text_layer_set_text(s_cal_array_layer[2][day_id-14], week[2][day_id-14]);
     } else if (day_id >= 7) {
-      if (day_id%7>=5) {
+      if (is_day_idx_weekend(day_id)) {
         text_layer_set_font(s_cal_array_layer[1][day_id-7], fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+      } else {
+        text_layer_set_font(s_cal_array_layer[1][day_id-7], fonts_get_system_font(FONT_KEY_GOTHIC_18));
       }
       strftime(week[1][day_id-7], 3, "%d", stm);
       text_layer_set_text(s_cal_array_layer[1][day_id-7], week[1][day_id-7]);
@@ -351,10 +410,11 @@ static void drawcal() {
         text_layer_set_background_color(s_cal_array_layer[1][day_id-7], GColorClear);
         text_layer_set_text_color(s_cal_array_layer[1][day_id-7], GColorWhite);
       }
-
     } else {
-      if (day_id%7>=5) {
+      if (is_day_idx_weekend(day_id)) {
         text_layer_set_font(s_cal_array_layer[0][day_id], fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+      } else {
+        text_layer_set_font(s_cal_array_layer[0][day_id], fonts_get_system_font(FONT_KEY_GOTHIC_18));
       }
       strftime(week[0][day_id], 3, "%d", stm);
       text_layer_set_text(s_cal_array_layer[0][day_id], week[0][day_id]);
@@ -575,6 +635,58 @@ static void tap_handler(AccelAxisType axis, int32_t direction) {
   tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
 }
 
+// Save the settings to persistent storage
+static void save_settings() {
+  persist_write_data(SETTINGS_KEY, &settings, sizeof(settings));
+}
+
+static void load_settings() {
+  if (persist_exists(SETTINGS_KEY)) {
+    persist_read_data(SETTINGS_KEY, &settings, sizeof(settings));
+  }
+}
+
+static void conf_inbox_received_handler(DictionaryIterator *iter, void *context) {
+  bool updateWeather = false;
+  
+  Tuple *conf = dict_find(iter, MESSAGE_KEY_wsd);
+  if(conf) {
+    char old = settings.weekStartDay;
+    settings.weekStartDay = conf->value->cstring[0];
+    if (old != settings.weekStartDay) {
+      drawcal();
+      handle_battery(battery_state_service_peek());
+    }
+  }
+
+  conf = dict_find(iter, MESSAGE_KEY_wt);
+  if (conf) {
+    settings.weatherTemp = conf->value->cstring[0];
+  }
+
+  conf = dict_find(iter, MESSAGE_KEY_wp);
+  if (conf) {
+    char old = settings.weatherProvider;
+    settings.weatherProvider = conf->value->cstring[0];
+    if (old != settings.weatherProvider) {
+      updateWeather = true;
+    }
+  }
+
+  conf = dict_find(iter, MESSAGE_KEY_wak);
+  if (conf) {
+    char old[20];
+    strncpy(old, settings.weatherApiKey, 20);
+    strncpy(settings.weatherApiKey, conf->value->cstring, 20);
+    if (strcmp(old, settings.weatherApiKey)!=0) {
+      updateWeather = true;
+    }
+  }
+
+  save_settings();
+  handle_weather(updateWeather);  
+}
+
 static void main_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_frame(window_layer);
@@ -621,13 +733,13 @@ static void main_window_load(Window *window) {
   
   for (int week=2;week>=0;week--){
     for (int day=0; day<7; day++) {
-        s_cal_array_layer[week][day] = text_layer_create(GRect(2+day*20, 115+week*15, 20, 21));
-        text_layer_set_text_color(s_cal_array_layer[week][day], GColorWhite);
-        text_layer_set_background_color(s_cal_array_layer[week][day], GColorClear);
-        text_layer_set_font(s_cal_array_layer[week][day], fonts_get_system_font(FONT_KEY_GOTHIC_18));
-        text_layer_set_text_alignment(s_cal_array_layer[week][day], GTextAlignmentCenter);
-        text_layer_set_text(s_cal_array_layer[week][day], "00");
-        layer_add_child(window_layer, text_layer_get_layer(s_cal_array_layer[week][day]));
+      s_cal_array_layer[week][day] = text_layer_create(GRect(2+day*20, 115+week*15, 20, 21));
+      text_layer_set_text_color(s_cal_array_layer[week][day], GColorWhite);
+      text_layer_set_background_color(s_cal_array_layer[week][day], GColorClear);
+      text_layer_set_font(s_cal_array_layer[week][day], fonts_get_system_font(FONT_KEY_GOTHIC_18));
+      text_layer_set_text_alignment(s_cal_array_layer[week][day], GTextAlignmentCenter);
+      text_layer_set_text(s_cal_array_layer[week][day], "00");
+      layer_add_child(window_layer, text_layer_get_layer(s_cal_array_layer[week][day]));
     }
     // Battery estimation bar
     s_bat_cal_bg_layer[week] = text_layer_create(GRect(2, 134+week*15, 140, 2));
@@ -665,12 +777,20 @@ static void main_window_load(Window *window) {
   text_layer_set_font(s_weather_icon_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_WEATHER_30)));
   layer_add_child(window_layer, text_layer_get_layer(s_weather_icon_layer));
 
-  s_weather_text_layer = text_layer_create(GRect(90, 83, 55, 40));
+  s_weather_text_layer = text_layer_create(GRect(88, 83, 55, 30));
   text_layer_set_text_color(s_weather_text_layer, GColorWhite);
   text_layer_set_background_color(s_weather_text_layer, GColorClear);
   text_layer_set_font(s_weather_text_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_24)));
-  text_layer_set_text_alignment(s_weather_text_layer, GTextAlignmentCenter);
+  text_layer_set_text_alignment(s_weather_text_layer, GTextAlignmentRight);
   layer_add_child(window_layer, text_layer_get_layer(s_weather_text_layer));
+
+  s_weather_unit_layer = text_layer_create(GRect(124, 92, 15, 15));
+  text_layer_set_text_color(s_weather_unit_layer, GColorWhite);
+  text_layer_set_background_color(s_weather_unit_layer, GColorClear);
+  text_layer_set_font(s_weather_unit_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD));
+  text_layer_set_text(s_weather_unit_layer, "C");
+  text_layer_set_text_alignment(s_weather_unit_layer, GTextAlignmentRight);
+  layer_add_child(window_layer, text_layer_get_layer(s_weather_unit_layer));
 
   s_weather_loc_layer = text_layer_create(GRect(80, 108, 64, 10));
   text_layer_set_text_color(s_weather_loc_layer, GColorWhite);
@@ -678,7 +798,7 @@ static void main_window_load(Window *window) {
   text_layer_set_font(s_weather_loc_layer, fonts_get_system_font(FONT_KEY_GOTHIC_09));
   text_layer_set_text_alignment(s_weather_loc_layer, GTextAlignmentCenter);
   layer_add_child(window_layer, text_layer_get_layer(s_weather_loc_layer));
-
+  
   // Ensures time is displayed immediately (will break if NULL tick event accessed).
   // (This is why it's a good idea to have a separate routine to do the update itself.)
   time_t now = time(NULL);
@@ -701,7 +821,6 @@ static void main_window_load(Window *window) {
 
   handle_battery(battery_state_service_peek());
   handle_steps();
-  
   handle_weather(false);
 }
 
@@ -720,6 +839,7 @@ static void main_window_unload(Window *window) {
   text_layer_destroy(s_seconds_layer);
   text_layer_destroy(s_weather_loc_layer);
   text_layer_destroy(s_weather_text_layer);
+  text_layer_destroy(s_weather_unit_layer);
   text_layer_destroy(s_weather_icon_layer);
   
   gbitmap_destroy(s_battery_bitmap);
@@ -746,11 +866,19 @@ static void main_window_unload(Window *window) {
 static void init() {
   s_main_window = window_create();
 
+  settings.weekStartDay = 'm';
+  settings.weatherTemp = 'C';
+  settings.weatherProvider = 'y';
+
+  load_settings();
+
   generic_weather_init();
-  generic_weather_set_provider(GenericWeatherProviderYahooWeather);
-  events_app_message_open();
   generic_weather_load(WEATHER_KEY);
 
+  // Clay
+  events_app_message_register_inbox_received(conf_inbox_received_handler, NULL);
+  events_app_message_open();
+  
   window_set_background_color(s_main_window, GColorBlack);
   window_set_window_handlers(s_main_window, (WindowHandlers) {
     .load = main_window_load,
