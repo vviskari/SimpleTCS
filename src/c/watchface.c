@@ -93,14 +93,15 @@ static void render_weather(GenericWeatherInfo *info) {
     return;
   }
   //APP_LOG(APP_LOG_LEVEL_INFO, "Weather, %s, %s, %d", info->name, info->description, info->temp_c);
-  static char s_temp_text[5];
+  static char s_temp_text[6];
+
   if (settings.weatherTemp == 'C') {
-    snprintf(s_temp_text, sizeof(s_temp_text), "%d˚",  info->temp_c);      
+    snprintf(s_temp_text, sizeof(s_temp_text), "%d˚", info->temp_c);      
   } else {
-    snprintf(s_temp_text, sizeof(s_temp_text), "%d˚",  info->temp_f);
+    snprintf(s_temp_text, sizeof(s_temp_text), "%d˚", info->temp_f);
   }
   text_layer_set_text(s_weather_text_layer, s_temp_text);
-  
+
   static char s_unit_text[2];
   snprintf(s_unit_text, sizeof(s_unit_text), "%c", settings.weatherTemp);
   text_layer_set_text(s_weather_unit_layer, s_unit_text);
@@ -109,7 +110,7 @@ static void render_weather(GenericWeatherInfo *info) {
 
   char condition = WEATHER_UNKNOWN;
   GColor weatherColor = GColorWhite;
-  
+
   switch(info->condition) {
     case GenericWeatherConditionClearSky:
       condition = info->day ? WEATHER_CLEAR : WEATHER_CLEAR_NIGHT;
@@ -147,6 +148,7 @@ static void render_weather(GenericWeatherInfo *info) {
     default:
       condition = WEATHER_UNKNOWN;
   }
+
   static char s_condition_text[2];
   snprintf(s_condition_text, sizeof(s_condition_text), "%c",  condition);  
   text_layer_set_text(s_weather_icon_layer, s_condition_text);
@@ -191,7 +193,7 @@ static bool userIsSleeping() {
   #if defined(PBL_HEALTH)
   // Get an activities mask
   HealthActivityMask activities = health_service_peek_current_activities();
-  
+
   // Determine which bits are set, and hence which activity is active
   if(activities & HealthActivitySleep) {
     isSleeping = true;
@@ -218,7 +220,7 @@ static void handle_weather(bool refresh) {
 
 static void estimate_battery(BatteryChargeState charge_state) {
   time_t now = time(NULL);
-  
+
   // Store current charging state
   bool lastCharging = false;
   if (persist_exists(BATT_CHARGING_KEY)) {
@@ -231,7 +233,7 @@ static void estimate_battery(BatteryChargeState charge_state) {
     // APP_LOG(APP_LOG_LEVEL_INFO, "Charging, skip");
     return;
   }
-  
+
   // default history
   BatteryHistory history = (BatteryHistory) { 
     .timestamp = 0, // marks null history if time is 0
@@ -250,7 +252,7 @@ static void estimate_battery(BatteryChargeState charge_state) {
     history.timestamp = now;
     history.charge = charge_state.charge_percent;
   }
-  
+
   if (history.timestamp == 0) {
     //APP_LOG(APP_LOG_LEVEL_INFO, "No old history. return");
     return;
@@ -264,12 +266,12 @@ static void estimate_battery(BatteryChargeState charge_state) {
     // skip battery levels 100 and 90, they are not reliable
     int currentTimeHours = (int)now/60/60;
     int currentChargePercent = charge_state.charge_percent*1000;  
-    
+
     // calculate slope for current charge against history charge (weighted)
     history.slope = (2*history.slope + (currentChargePercent-historyChargePercent)/(currentTimeHours-historyTimeHours)) / 3;
     history.last_estimated = charge_state.charge_percent;
   }
-    
+
   // estimated time when battery is 0
   int estimatedBatteryLife = (-historyChargePercent + history.slope * historyTimeHours) / history.slope*60*60;
   //APP_LOG(APP_LOG_LEVEL_INFO, "Estimated battery life until %d", estimatedBatteryLife);
@@ -285,7 +287,7 @@ static void estimate_battery(BatteryChargeState charge_state) {
   struct tm *stm = localtime(&now);
   int offset = (settings.weekStartDay == 's') ? 0 : 1;
   int weekStart = now - (atoi(weekdaynumber)-offset)*60*60*24 - stm->tm_hour*60*60 - stm->tm_min*60 - stm->tm_sec;
-  
+
   Layer *window_layer = window_get_root_layer(s_main_window);
   text_layer_destroy(s_bat_cal_bat_layer[0]);
   text_layer_destroy(s_bat_cal_bat_layer[1]);
@@ -327,7 +329,7 @@ static void estimate_battery(BatteryChargeState charge_state) {
     text_layer_set_background_color(s_bat_cal_bat_layer[1], GColorSpringBud);
     layer_add_child(window_layer, text_layer_get_layer(s_bat_cal_bat_layer[1]));
   }
-  
+
   // next week
   if (estimatedBatteryLife > weekStart+weekSeconds) {
     // estimation ends next week
@@ -369,7 +371,7 @@ static void drawcal() {
   strftime(monthdaynumber, 3, "%d", localtime(&now));
   // The weekday as a number, 1-based from Monday (from ‘1’ to ‘7’). [tm_wday]
   strftime(weekdaynumber, 2, "%u", localtime(&now));
-  
+
   static char week[3][7][3];
 
   int day_id = 0;
@@ -426,7 +428,7 @@ static void drawcal() {
 
 static void handle_battery(BatteryChargeState charge_state) {
   static char battery_text[] = "100%";
-  
+
   Layer *window_layer = window_get_root_layer(s_main_window);
   text_layer_destroy(s_box);
   int width = 22*charge_state.charge_percent/100;
@@ -461,7 +463,7 @@ static void handle_bluetooth(bool connected) {
   text_layer_set_text(s_connection_layer, connected ? "online" : "OFFLINE");
   bitmap_layer_destroy(s_bluetooth_bitmap_layer);
   text_layer_set_font(s_connection_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-  
+
   if (connected) {
     text_layer_set_font(s_connection_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
     text_layer_set_text_color(s_connection_layer, GColorGreen);
@@ -512,13 +514,13 @@ static void handle_steps() {
     // Check the metric has data available for today
     HealthServiceAccessibilityMask stepsAvailable = health_service_metric_accessible(metric, start, end);
     HealthServiceAccessibilityMask averageAvailable = health_service_metric_averaged_accessible(metric, start, end, scope);
-    
+
     if(stepsAvailable & averageAvailable & HealthServiceAccessibilityMaskAvailable) {
       int stepsToday = (int)health_service_sum_today(metric);
       //APP_LOG(APP_LOG_LEVEL_INFO, "Steps data available: %d", stepsToday);
 
       snprintf(s_steps_text, sizeof(s_steps_text), "%d", stepsToday);    
-      
+
       text_layer_set_text_color(s_steps_layer, GColorWhite);
       #if defined(PBL_COLOR)
       int average = (int) health_service_sum_averaged(metric, start, end, scope);
@@ -561,21 +563,21 @@ static void handle_time(struct tm* tick_time, TimeUnits units_changed) {
     strftime(s_time_text, sizeof(s_time_text), "%I:%M", tick_time);
   }
   text_layer_set_text(s_time_layer, s_time_text);
-  
+
   // Time and date
   static char s_date_text[] = "XXXXXXXXXXXXX, 12.12.1999";
   strftime(weekdaynumber, sizeof(weekdaynumber), "%u", tick_time);
-  
+
   static char dmy[] = "XXXXXXXXXXXXX, 12.12.1999";
   strftime(dmy, sizeof(dmy), "%d.%m.%Y", tick_time);
-  
+
   snprintf(s_date_text, sizeof(s_date_text), "%s, %s", weekdayname[loc][atoi(weekdaynumber)-1], dmy);
   text_layer_set_text(s_date_layer, s_date_text);
 }
 
 static void handle_minute_tick(struct tm* tick_time, TimeUnits units_changed) {
   handle_time(tick_time, units_changed);
-  
+
   if (tick_time->tm_min == 0) {
     // Draw calendar every hour on the hour
     drawcal();
@@ -606,21 +608,21 @@ static void handle_second_tick(struct tm* tick_time, TimeUnits units_changed) {
     show_seconds = !show_seconds;
     secondticks= show_seconds ? 1 : MAX_SECONDS+1;    
   }
-  
+
   if (show_seconds && secondticks <= MAX_SECONDS) {
     static char s_seconds_text[] = "00";
     strftime(s_seconds_text, sizeof(s_seconds_text), "%S", tick_time);
     text_layer_set_text(s_seconds_layer, s_seconds_text);
-  
+
     layer_set_hidden((Layer*) s_weather_text_layer, true);
     layer_set_hidden((Layer*) s_weather_loc_layer, true);
-    layer_set_hidden((Layer*) s_weather_icon_layer, true);
+    layer_set_hidden((Layer*) s_weather_unit_layer, true);
     layer_set_hidden((Layer*) s_seconds_layer, false);
   } else {
     text_layer_set_text(s_seconds_layer, "");
     layer_set_hidden((Layer*) s_weather_text_layer, false);
     layer_set_hidden((Layer*) s_weather_loc_layer, false);
-    layer_set_hidden((Layer*) s_weather_icon_layer, false);
+    layer_set_hidden((Layer*) s_weather_unit_layer, false);
     layer_set_hidden((Layer*) s_seconds_layer, true);    
   }
 
@@ -637,7 +639,6 @@ static void tap_handler(AccelAxisType axis, int32_t direction) {
   tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
 }
 
-// Save the settings to persistent storage
 static void save_settings() {
   persist_write_data(SETTINGS_KEY, &settings, sizeof(settings));
 }
@@ -650,7 +651,7 @@ static void load_settings() {
 
 static void conf_inbox_received_handler(DictionaryIterator *iter, void *context) {
   bool updateWeather = false;
-  
+
   Tuple *conf = dict_find(iter, MESSAGE_KEY_wsd);
   if(conf) {
     char old = settings.weekStartDay;
@@ -732,7 +733,7 @@ static void main_window_load(Window *window) {
 
   text_layer_set_font(s_seconds_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_32)));
   layer_set_hidden((Layer *) s_seconds_layer, true);
-  
+
   for (int week=2;week>=0;week--){
     for (int day=0; day<7; day++) {
       s_cal_array_layer[week][day] = text_layer_create(GRect(2+day*20, 115+week*15, 20, 21));
@@ -773,20 +774,20 @@ static void main_window_load(Window *window) {
   layer_add_child(window_layer, bitmap_layer_get_layer(s_shoe_bitmap_layer));  
   #endif
 
-  s_weather_icon_layer = text_layer_create(GRect(53, 85, 32, 35));
+  s_weather_icon_layer = text_layer_create(GRect(58, 85, 32, 35));
   text_layer_set_text_color(s_weather_icon_layer, GColorWhite);
   text_layer_set_background_color(s_weather_icon_layer, GColorClear);
   text_layer_set_font(s_weather_icon_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_WEATHER_30)));
   layer_add_child(window_layer, text_layer_get_layer(s_weather_icon_layer));
 
-  s_weather_text_layer = text_layer_create(GRect(88, 83, 55, 30));
+  s_weather_text_layer = text_layer_create(GRect(87, 83, 55, 30));
   text_layer_set_text_color(s_weather_text_layer, GColorWhite);
   text_layer_set_background_color(s_weather_text_layer, GColorClear);
   text_layer_set_font(s_weather_text_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_24)));
   text_layer_set_text_alignment(s_weather_text_layer, GTextAlignmentRight);
   layer_add_child(window_layer, text_layer_get_layer(s_weather_text_layer));
 
-  s_weather_unit_layer = text_layer_create(GRect(124, 92, 15, 15));
+  s_weather_unit_layer = text_layer_create(GRect(124, 93, 15, 15));
   text_layer_set_text_color(s_weather_unit_layer, GColorWhite);
   text_layer_set_background_color(s_weather_unit_layer, GColorClear);
   text_layer_set_font(s_weather_unit_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD));
@@ -800,7 +801,7 @@ static void main_window_load(Window *window) {
   text_layer_set_font(s_weather_loc_layer, fonts_get_system_font(FONT_KEY_GOTHIC_09));
   text_layer_set_text_alignment(s_weather_loc_layer, GTextAlignmentCenter);
   layer_add_child(window_layer, text_layer_get_layer(s_weather_loc_layer));
-  
+
   // Ensures time is displayed immediately (will break if NULL tick event accessed).
   // (This is why it's a good idea to have a separate routine to do the update itself.)
   time_t now = time(NULL);
@@ -832,7 +833,7 @@ static void main_window_unload(Window *window) {
   tick_timer_service_unsubscribe();
   battery_state_service_unsubscribe();
   connection_service_unsubscribe();
-  
+
   text_layer_destroy(s_connection_layer);
   text_layer_destroy(s_battery_layer);
   text_layer_destroy(s_box);
@@ -843,7 +844,7 @@ static void main_window_unload(Window *window) {
   text_layer_destroy(s_weather_text_layer);
   text_layer_destroy(s_weather_unit_layer);
   text_layer_destroy(s_weather_icon_layer);
-  
+
   gbitmap_destroy(s_battery_bitmap);
   gbitmap_destroy(s_bluetooth_bitmap);
   bitmap_layer_destroy(s_battery_bitmap_layer);
@@ -880,7 +881,7 @@ static void init() {
   // Clay
   events_app_message_register_inbox_received(conf_inbox_received_handler, NULL);
   events_app_message_open();
-  
+
   window_set_background_color(s_main_window, GColorBlack);
   window_set_window_handlers(s_main_window, (WindowHandlers) {
     .load = main_window_load,
