@@ -614,11 +614,13 @@ static void handle_second_tick(struct tm* tick_time, TimeUnits units_changed) {
   
     layer_set_hidden((Layer*) s_weather_text_layer, true);
     layer_set_hidden((Layer*) s_weather_loc_layer, true);
+    layer_set_hidden((Layer*) s_weather_icon_layer, true);
     layer_set_hidden((Layer*) s_seconds_layer, false);
   } else {
     text_layer_set_text(s_seconds_layer, "");
     layer_set_hidden((Layer*) s_weather_text_layer, false);
     layer_set_hidden((Layer*) s_weather_loc_layer, false);
+    layer_set_hidden((Layer*) s_weather_icon_layer, false);
     layer_set_hidden((Layer*) s_seconds_layer, true);    
   }
 
