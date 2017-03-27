@@ -180,6 +180,13 @@ void handle_battery() {
   render_battery(battery_state_service_peek());
 }
 
+void hide_battery_estimate(bool hide) {
+  for (int week=2;week>=0;week--){
+    layer_set_hidden((Layer*) s_bat_cal_bg_layer[week], hide);
+    layer_set_hidden((Layer*) s_bat_cal_bat_layer[week], hide);
+  }
+}
+
 void battery_load(){
   Layer *window_layer = window_get_root_layer(s_main_window);
 

@@ -15,7 +15,7 @@ static void save_settings() {
 
 static void conf_inbox_received_handler(DictionaryIterator *iter, void *context) {
   bool updateWeather = false;
-
+  
   Tuple *conf = dict_find(iter, MESSAGE_KEY_wsd);
   if(conf) {
     char old = settings.weekStartDay;
@@ -29,6 +29,13 @@ static void conf_inbox_received_handler(DictionaryIterator *iter, void *context)
   conf = dict_find(iter, MESSAGE_KEY_wt);
   if (conf) {
     settings.weatherTemp = conf->value->cstring[0];
+  }
+
+  conf = dict_find(iter, MESSAGE_KEY_wf);
+  if (conf) {
+    settings.forecast = conf->value->int8 == 1;
+  } else {
+    settings.forecast = false;
   }
 
   conf = dict_find(iter, MESSAGE_KEY_wp);
@@ -58,6 +65,7 @@ void load_settings() {
   settings.weekStartDay = 'm';
   settings.weatherTemp = 'C';
   settings.weatherProvider = 'y';
+  settings.forecast = false;
 
   if (persist_exists(SETTINGS_KEY)) {
     persist_read_data(SETTINGS_KEY, &settings, sizeof(settings));

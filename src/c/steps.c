@@ -48,9 +48,8 @@ void handle_steps() {
 }
 
 void steps_load(){
-  Layer *window_layer = window_get_root_layer(s_main_window);
-
   #if defined(PBL_HEALTH)
+  Layer *window_layer = window_get_root_layer(s_main_window);
   s_steps_layer = text_layer_create(GRect(0, 96, 50, 18));
   text_layer_set_text_color(s_steps_layer, GColorWhite);
   text_layer_set_background_color(s_steps_layer, GColorClear);

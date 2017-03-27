@@ -11,6 +11,7 @@ static TextLayer *s_weather_text_layer;
 static TextLayer *s_weather_icon_layer;
 static TextLayer *s_weather_unit_layer;
 static TextLayer *s_weather_loc_layer;
+static Layer *s_weather_forecast_layer;
 
 static const char WEATHER_CLEAR = 'B';
 static const char WEATHER_CLEAR_NIGHT = 'C';
@@ -25,11 +26,26 @@ static const char WEATHER_SNOW = 'W';
 static const char WEATHER_WIND = 'F';
 static const char WEATHER_UNKNOWN = ')';
 
+#define F_HEIGHT 48
+#define F_WIDTH 140
+typedef struct {
+  int16_t maxTemp;
+  int16_t minTemp;
+  int16_t maxValue;
+  int16_t minValue;
+  time_t maxTime;
+  time_t minTime;  
+} ForecastParams;
+
+static GenericWeatherForecast *forecast;
+static ForecastParams params;
+static int forecastSize=0;
+
 static void render_weather(GenericWeatherInfo *info) {
   if (!info) {
     return;
   }
-  //APP_LOG(APP_LOG_LEVEL_INFO, "Weather, %s, %s, %d", info->name, info->description, info->temp_c);
+  APP_LOG(APP_LOG_LEVEL_INFO, "Weather, %s, %s, %d", info->name, info->description, info->temp_c);
   static char s_temp_text[6];
 
   if (settings.weatherTemp == 'C') {
@@ -92,9 +108,58 @@ static void render_weather(GenericWeatherInfo *info) {
   text_layer_set_text_color(s_weather_icon_layer, weatherColor);
 }
 
-static void weather_callback(GenericWeatherInfo *info, GenericWeatherStatus status) {
+static void weather_callback(GenericWeatherInfo *info, 
+                             GenericWeatherForecast *_forecast,
+                             int _forecastSize, 
+                             GenericWeatherStatus status) {
   if (status == GenericWeatherStatusAvailable) {
     generic_weather_save(WEATHER_KEY);
+    if (_forecast && _forecastSize > 0) {
+      forecast = _forecast;
+      forecastSize = _forecastSize;
+      
+      params = (ForecastParams) {
+        .maxTemp  = -1000,
+        .minTemp  = 1000,
+        .maxValue = -1000,
+        .minValue = 1000,
+        .maxTime  = 0,
+        .minTime  = 0
+      };
+      
+      // find params
+      for (int i = 0; i<forecastSize; i++) {
+        int16_t temp = 0;
+        if (settings.weatherTemp == 'C') {
+          temp = forecast[i].temp_c;
+        } else if (settings.weatherTemp == 'F') {
+          temp = forecast[i].temp_f;
+        }
+        if (params.maxTemp < temp) {
+          params.maxTemp = temp;
+        }
+        if (params.minTemp > temp) {
+          params.minTemp = temp;
+        }
+
+        time_t time = forecast[i].timestamp;
+        if (params.maxTime == 0) {
+          params.maxTime = time;
+        }
+        if (params.minTime == 0) {
+          params.minTime = time;
+        }
+        if (params.maxTime < time) {
+          params.maxTime = time;
+        }
+        if (params.minTime > time) {
+          params.minTime = time;
+        }
+      }
+    } else {
+      forecast = NULL;
+      forecastSize = 0;
+    }
     render_weather(info);
   } else {
     // load old state
@@ -122,7 +187,40 @@ static void js_ready_handler(void *context) {
     default:
       generic_weather_set_provider(GenericWeatherProviderUnknown);
   }
+  generic_weather_set_forecast(settings.forecast);
   generic_weather_fetch(weather_callback);
+}
+
+// Render forecast chart
+static void forecast_update_proc(Layer *layer, GContext *ctx) {
+  if (!forecast || forecastSize == 0) {
+    return;
+  }
+  graphics_context_set_stroke_color(ctx, GColorWhite);
+  graphics_context_set_fill_color(ctx, GColorBlack);
+  graphics_context_set_text_color(ctx, GColorWhite);
+
+  GRect rect_bounds = layer_get_bounds(layer);
+  graphics_fill_rect(ctx, rect_bounds, 0, GCornerNone);
+
+  // 140 * 48
+  int timeInterval = F_WIDTH/forecastSize;
+  int tempIntervalK = F_HEIGHT*1000/(params.maxTemp-params.minTemp);
+
+  GPoint start = {
+    .x=-1,
+    .y=-1
+  };
+  for (int i = 0; i<forecastSize; i++) {
+    int16_t x = (i+1)*timeInterval;
+    int16_t y = ((settings.weatherTemp == 'C' ? forecast[i].temp_c : forecast[i].temp_f) - params.minTemp) * tempIntervalK / 1000;
+    GPoint end = { .x = x, .y = F_HEIGHT-y };
+    if (start.x >= 0) {
+      // draw line
+      graphics_draw_line(ctx, start, end);
+    }
+    start = end;
+  }
 }
 
 void handle_weather(bool refresh) {
@@ -142,6 +240,10 @@ void hide_weather(bool hide) {
   layer_set_hidden((Layer*) s_weather_text_layer, hide);
   layer_set_hidden((Layer*) s_weather_loc_layer, hide);
   layer_set_hidden((Layer*) s_weather_unit_layer, hide);
+}
+
+void hide_forecast(bool hide) {
+  layer_set_hidden(s_weather_forecast_layer, hide);  
 }
 
 void weather_load(){
@@ -175,6 +277,11 @@ void weather_load(){
   text_layer_set_text_alignment(s_weather_loc_layer, GTextAlignmentCenter);
   layer_add_child(window_layer, text_layer_get_layer(s_weather_loc_layer));
 
+  s_weather_forecast_layer = layer_create(GRect(2, 119, F_WIDTH, F_HEIGHT));
+  layer_set_update_proc(s_weather_forecast_layer, forecast_update_proc);
+  hide_forecast(true);
+  layer_add_child(window_layer, s_weather_forecast_layer);
+
   handle_weather(false);
 }
 
@@ -183,10 +290,12 @@ void weather_unload() {
   text_layer_destroy(s_weather_text_layer);
   text_layer_destroy(s_weather_unit_layer);
   text_layer_destroy(s_weather_icon_layer);
+  layer_destroy(s_weather_forecast_layer);
 }
 
 void weather_init() {
   generic_weather_init();
+  generic_weather_set_location((GenericWeatherCoordinates) {6047394,2509040});
   generic_weather_load(WEATHER_KEY);
 }
 

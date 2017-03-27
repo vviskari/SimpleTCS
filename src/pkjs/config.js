@@ -91,7 +91,19 @@ module.exports = [
         "type": "text",
         "id": "idApiDescription",
         "defaultValue": "Insert your weather API key above. If you selected Yahoo! above, the API key is NOT required.",
-      }          
+      },
+      {
+        "type": "toggle",
+        "id": "idForecast",
+        "messageKey": "wf",
+        "defaultValue": false,
+        "label": "Fetch forecast:"
+      },
+      {
+        "type": "text",
+        "id": "idForecastDescription",
+        "defaultValue": "Enable to fetch weather forecast data. Works only with Weather Underground provider.",
+      },
     ]
   },
   {

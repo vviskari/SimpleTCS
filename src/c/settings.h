@@ -5,6 +5,7 @@ typedef struct {
   char weatherTemp;
   char weatherProvider;
   char weatherApiKey[20];
+  bool forecast;
 } Settings;
 
 extern Settings settings;

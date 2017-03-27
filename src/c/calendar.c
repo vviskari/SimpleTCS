@@ -81,9 +81,16 @@ void drawcal() {
   }
 }
 
+void hide_calendar(bool hide) {
+  for (int week=2;week>=0;week--){
+    for (int day=0; day<7; day++) {
+      layer_set_hidden((Layer*) s_cal_array_layer[week][day], hide);
+    }
+  }
+}
+
 void calendar_load() {
   Layer *window_layer = window_get_root_layer(s_main_window);
-
   for (int week=2;week>=0;week--){
     for (int day=0; day<7; day++) {
       s_cal_array_layer[week][day] = text_layer_create(GRect(2+day*20, 115+week*15, 20, 21));
