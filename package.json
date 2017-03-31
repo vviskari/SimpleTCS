@@ -2,7 +2,7 @@
     "author": "ville.viskari@gmail.com",
     "dependencies": {
         "pebble-clay": "1.0.4",
-        "pebble-generic-weather": "https://builds.cloudpebble.net/5d4800a8-bfbb-4842-bb22-579ed138f3dc/package.tar.gz"
+        "pebble-generic-weather": "https://builds.cloudpebble.net/93f5b5e4-028f-413f-9e3a-44964df7baaa/package.tar.gz"
     },
     "keywords": [],
     "name": "simple-tcs",
@@ -101,5 +101,5 @@
             "watchface": true
         }
     },
-    "version": "1.14.0"
+    "version": "2.0.0"
 }

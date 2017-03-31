@@ -15,3 +15,5 @@ extern uint32_t BATT_HISTORY_KEY;
 extern uint32_t BATT_CHARGING_KEY;
 extern uint32_t WEATHER_KEY;
 extern uint32_t SETTINGS_KEY;
+extern uint32_t FORECAST_TOGGLE_KEY;
+extern uint32_t WEATHER_KEY_FORECAST;

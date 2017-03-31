@@ -2,6 +2,7 @@
 #include <pebble-events/pebble-events.h>
 
 #include "settings.h"
+#include "utils.h"
 #include "global.h"
 #include "weather.h"
 #include "calendar.h"
@@ -33,9 +34,14 @@ static void conf_inbox_received_handler(DictionaryIterator *iter, void *context)
 
   conf = dict_find(iter, MESSAGE_KEY_wf);
   if (conf) {
-    settings.forecast = conf->value->int8 == 1;
-  } else {
-    settings.forecast = false;
+    bool old = settings.forecast;
+    settings.forecast = conf->value->int8 == 1 ? true : false;
+    if (old != settings.forecast) {
+      updateWeather = true;
+      if (!settings.forecast) {
+        set_show_forecast(false);
+      }
+    }
   }
 
   conf = dict_find(iter, MESSAGE_KEY_wp);
@@ -44,6 +50,10 @@ static void conf_inbox_received_handler(DictionaryIterator *iter, void *context)
     settings.weatherProvider = conf->value->cstring[0];
     if (old != settings.weatherProvider) {
       updateWeather = true;
+    }
+    if (settings.weatherProvider != 'w') {
+      settings.forecast = false;
+      set_show_forecast(false);
     }
   }
 

@@ -24,13 +24,22 @@ uint32_t BATT_HISTORY_KEY = 1;
 uint32_t BATT_CHARGING_KEY = 2;
 uint32_t WEATHER_KEY = 3;
 uint32_t SETTINGS_KEY = 4;
+uint32_t FORECAST_TOGGLE_KEY = 5;
+uint32_t WEATHER_KEY_FORECAST = 1000;
 
 static int secondticks = 0;
 static int shakes = 0;
 static bool show_seconds = false;
-static bool hidden_forecast = true;
+static bool show_forecast = false;
 static int shaketicks = 0;
 static int MAX_SECONDS = 30;
+
+void set_show_forecast(bool show) {
+  show_forecast = show;
+  hide_forecast(!show_forecast);
+  hide_calendar(show_forecast);
+  hide_battery_estimate(show_forecast);
+}
 
 static void handle_minute_tick(struct tm* tick_time, TimeUnits units_changed) {
   handle_time(tick_time, units_changed);
@@ -57,29 +66,27 @@ static void handle_minute_tick(struct tm* tick_time, TimeUnits units_changed) {
 static void handle_second_tick(struct tm* tick_time, TimeUnits units_changed) {
   secondticks++;
   shaketicks++;
-  APP_LOG(APP_LOG_LEVEL_INFO,"second: shakes %d", shakes);
 
   if (tick_time->tm_sec == 0) {
     handle_minute_tick(tick_time, units_changed);
   }
   if (shaketicks % 2 == 0) {
     if (shakes == 2) {
-      APP_LOG(APP_LOG_LEVEL_INFO,"toggle seconds");
       show_seconds = !show_seconds;
       hide_weather(show_seconds);
       hide_seconds(!show_seconds);
       secondticks = show_seconds ? 1 : MAX_SECONDS+1;
     }
-    if (shakes == 3) {
-      APP_LOG(APP_LOG_LEVEL_INFO,"toggle forecast");
+    if (shakes == 3 && settings.forecast) {
       shakes = 0;
-      hidden_forecast = !hidden_forecast;
-      hide_forecast(hidden_forecast);
-      hide_calendar(!hidden_forecast);
-      hide_battery_estimate(!hidden_forecast);
+      // toggle forecast
+      set_show_forecast(!show_forecast);
     }
-    APP_LOG(APP_LOG_LEVEL_INFO,"reset shakes");
     shaketicks = shakes = 0;
+    if (!show_seconds) {
+      tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
+      return;
+    }
   } 
 
   if (show_seconds && secondticks <= MAX_SECONDS) {
@@ -97,10 +104,19 @@ static void handle_second_tick(struct tm* tick_time, TimeUnits units_changed) {
 
 static void tap_handler(AccelAxisType axis, int32_t direction) {
   shakes++;
-  APP_LOG(APP_LOG_LEVEL_INFO,"add shakes, axis %d", axis);
-
   shaketicks = 0;
+  APP_LOG(APP_LOG_LEVEL_INFO, "TAPS: %d", shakes);
   tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
+}
+
+static void load_window_state() {
+  if (persist_exists(FORECAST_TOGGLE_KEY)) {
+    set_show_forecast(persist_read_bool(FORECAST_TOGGLE_KEY));
+  }
+}
+
+static void save_window_state() {
+  persist_write_bool(FORECAST_TOGGLE_KEY, show_forecast);
 }
 
 static void main_window_load(Window *window) {
@@ -110,6 +126,7 @@ static void main_window_load(Window *window) {
   battery_load();
   weather_load();
   steps_load();
+  load_window_state();
   shakes = 0;
   time_t now = time(NULL);
   struct tm *current_time = localtime(&now);
@@ -120,13 +137,13 @@ static void main_window_load(Window *window) {
 }
 
 static void main_window_unload(Window *window) {
-
   bluetooth_unload();
   weather_unload();
   datetime_unload();
   steps_unload();
   calendar_unload();
   battery_unload();
+  save_window_state();
   
   accel_tap_service_unsubscribe();
   tick_timer_service_unsubscribe();

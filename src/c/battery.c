@@ -232,5 +232,5 @@ void battery_unload(){
   for (int week=2;week>=0;week--){
     text_layer_destroy(s_bat_cal_bg_layer[week]);
     text_layer_destroy(s_bat_cal_bat_layer[week]);
-  }  
+  }
 }
