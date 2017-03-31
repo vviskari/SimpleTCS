@@ -83,6 +83,7 @@ static void estimate_battery(BatteryChargeState charge_state) {
   int weekStart = now - (atoi(weekdaynumber)-offset)*60*60*24 - stm->tm_hour*60*60 - stm->tm_min*60 - stm->tm_sec;
 
   Layer *window_layer = window_get_root_layer(s_main_window);
+  bool is_bat_cal_hidden = layer_get_hidden((Layer*) s_bat_cal_bat_layer[1]);
   text_layer_destroy(s_bat_cal_bat_layer[0]);
   text_layer_destroy(s_bat_cal_bat_layer[1]);
   text_layer_destroy(s_bat_cal_bat_layer[2]);
@@ -98,11 +99,13 @@ static void estimate_battery(BatteryChargeState charge_state) {
     //APP_LOG(APP_LOG_LEVEL_INFO, "Last week %d, %d", start, width);
     s_bat_cal_bat_layer[0] = text_layer_create(GRect(2+start, 134, width, 2));
     text_layer_set_background_color(s_bat_cal_bat_layer[0], GColorSpringBud);
+    layer_set_hidden((Layer*) s_bat_cal_bat_layer[0], is_bat_cal_hidden);
     layer_add_child(window_layer, text_layer_get_layer(s_bat_cal_bat_layer[0]));
   } else {
     // no history last week
     s_bat_cal_bat_layer[0] = text_layer_create(GRect(2, 134, 140, 2));
     text_layer_set_background_color(s_bat_cal_bat_layer[0], GColorBlack);
+    layer_set_hidden((Layer*) s_bat_cal_bat_layer[0], is_bat_cal_hidden);
     layer_add_child(window_layer, text_layer_get_layer(s_bat_cal_bat_layer[0]));
   }
 
@@ -121,6 +124,7 @@ static void estimate_battery(BatteryChargeState charge_state) {
     //APP_LOG(APP_LOG_LEVEL_INFO, "This week %d, %d", start, width);
     s_bat_cal_bat_layer[1] = text_layer_create(GRect(2+start, 134+15, width, 2));
     text_layer_set_background_color(s_bat_cal_bat_layer[1], GColorSpringBud);
+    layer_set_hidden((Layer*) s_bat_cal_bat_layer[1], is_bat_cal_hidden);
     layer_add_child(window_layer, text_layer_get_layer(s_bat_cal_bat_layer[1]));
   }
 
@@ -135,11 +139,13 @@ static void estimate_battery(BatteryChargeState charge_state) {
 
     s_bat_cal_bat_layer[2] = text_layer_create(GRect(2, 134+30, width, 2));
     text_layer_set_background_color(s_bat_cal_bat_layer[2], GColorSpringBud);
+    layer_set_hidden((Layer*) s_bat_cal_bat_layer[2], is_bat_cal_hidden);
     layer_add_child(window_layer, text_layer_get_layer(s_bat_cal_bat_layer[2]));
   } else {
     // black next week
     s_bat_cal_bat_layer[2] = text_layer_create(GRect(2, 134+30, 140, 2));
     text_layer_set_background_color(s_bat_cal_bat_layer[2], GColorBlack);
+    layer_set_hidden((Layer*) s_bat_cal_bat_layer[2], is_bat_cal_hidden);
     layer_add_child(window_layer, text_layer_get_layer(s_bat_cal_bat_layer[2]));
   }
 }

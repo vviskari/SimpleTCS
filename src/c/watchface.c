@@ -105,7 +105,6 @@ static void handle_second_tick(struct tm* tick_time, TimeUnits units_changed) {
 static void tap_handler(AccelAxisType axis, int32_t direction) {
   shakes++;
   shaketicks = 0;
-  APP_LOG(APP_LOG_LEVEL_INFO, "TAPS: %d", shakes);
   tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
 }
 

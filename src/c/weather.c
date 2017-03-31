@@ -181,7 +181,6 @@ static void weather_callback(GenericWeatherInfo *info,
       generic_weather_load_forecast(WEATHER_KEY_FORECAST);
     }
   }
-  APP_LOG(APP_LOG_LEVEL_INFO, "weather_callback(): bytes used: %dB", (int) heap_bytes_used());
 }
 
 static void js_ready_handler(void *context) {
@@ -391,7 +390,7 @@ void weather_unload() {
 void weather_init() {
   generic_weather_init();
   // TEMPORARY
-  generic_weather_set_location((GenericWeatherCoordinates) {6016437,2492361});
+  //generic_weather_set_location((GenericWeatherCoordinates) {6016437,2492361});
   generic_weather_set_forecast(settings.forecast);
   generic_weather_load(WEATHER_KEY);
   if (settings.forecast) {
