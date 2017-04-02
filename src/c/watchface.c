@@ -105,6 +105,7 @@ static void handle_second_tick(struct tm* tick_time, TimeUnits units_changed) {
 static void tap_handler(AccelAxisType axis, int32_t direction) {
   shakes++;
   shaketicks = 0;
+  APP_LOG(APP_LOG_LEVEL_INFO, "TAP");
   tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
 }
 
@@ -137,11 +138,11 @@ static void main_window_load(Window *window) {
 
 static void main_window_unload(Window *window) {
   bluetooth_unload();
-  weather_unload();
   datetime_unload();
-  steps_unload();
   calendar_unload();
   battery_unload();
+  weather_unload();
+  steps_unload();
   save_window_state();
   
   accel_tap_service_unsubscribe();
@@ -152,6 +153,7 @@ static void init() {
   load_settings();
   weather_init();
   settings_init();
+  events_app_message_open();
 
   s_main_window = window_create();
   window_set_background_color(s_main_window, GColorBlack);
@@ -164,6 +166,7 @@ static void init() {
 
 static void deinit() {
   weather_deinit();
+  settings_deinit();
   window_destroy(s_main_window);
 }
 

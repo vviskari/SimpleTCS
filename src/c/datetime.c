@@ -5,6 +5,8 @@
 static TextLayer *s_date_layer;
 static TextLayer *s_time_layer;
 static TextLayer *s_seconds_layer;
+static GFont font52;
+static GFont font32;
 
 static char weekdayname[6][7][15] = {
   {"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"},
@@ -70,11 +72,13 @@ void hide_seconds(bool hide) {
 
 void datetime_load() {
   Layer *window_layer = window_get_root_layer(s_main_window);
-
+  font52 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_52));
+  font32 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_32));
+  
   s_time_layer = text_layer_create(GRect(0, 28, 144, 55));
   text_layer_set_text_color(s_time_layer, GColorWhite);
   text_layer_set_background_color(s_time_layer, GColorClear);
-  text_layer_set_font(s_time_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_52)));
+  text_layer_set_font(s_time_layer, font52);
   text_layer_set_text_alignment(s_time_layer, GTextAlignmentCenter);
   layer_add_child(window_layer, text_layer_get_layer(s_time_layer));
 
@@ -92,7 +96,7 @@ void datetime_load() {
   text_layer_set_text_color(s_seconds_layer, GColorOrange);
   #endif
   text_layer_set_background_color(s_seconds_layer, GColorClear);
-  text_layer_set_font(s_seconds_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_32)));
+  text_layer_set_font(s_seconds_layer, font32);
   layer_add_child(window_layer, text_layer_get_layer(s_seconds_layer));
 
   hide_seconds(true);
@@ -102,4 +106,6 @@ void datetime_unload() {
   text_layer_destroy(s_date_layer);
   text_layer_destroy(s_time_layer);
   text_layer_destroy(s_seconds_layer);
+  fonts_unload_custom_font(font52);
+  fonts_unload_custom_font(font32);
 }

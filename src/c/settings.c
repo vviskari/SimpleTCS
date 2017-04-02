@@ -9,6 +9,7 @@
 #include "battery.h"
 
 Settings settings;
+static EventHandle handle;
 
 static void save_settings() {
   persist_write_data(SETTINGS_KEY, &settings, sizeof(settings));
@@ -85,6 +86,9 @@ void load_settings() {
 
 void settings_init() {
   // Clay
-  events_app_message_register_inbox_received(conf_inbox_received_handler, NULL);
-  events_app_message_open();
+  handle = events_app_message_register_inbox_received(conf_inbox_received_handler, NULL);
+}
+
+void settings_deinit() {
+  events_app_message_unsubscribe(handle);
 }

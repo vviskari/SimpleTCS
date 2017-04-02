@@ -26,6 +26,9 @@ static const char WEATHER_SNOW = 'W';
 static const char WEATHER_WIND = 'F';
 static const char WEATHER_UNKNOWN = ')';
 
+static GFont weatherFont;
+static GFont font24;
+
 #define F_HEIGHT 48
 #define F_WIDTH 140
 typedef struct {
@@ -342,16 +345,18 @@ void hide_forecast(bool hide) {
 void weather_load(){
   Layer *window_layer = window_get_root_layer(s_main_window);
 
+  weatherFont = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_WEATHER_30));
+  font24 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_24));
   s_weather_icon_layer = text_layer_create(GRect(58, 85, 32, 35));
   text_layer_set_text_color(s_weather_icon_layer, GColorWhite);
   text_layer_set_background_color(s_weather_icon_layer, GColorClear);
-  text_layer_set_font(s_weather_icon_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_WEATHER_30)));
+  text_layer_set_font(s_weather_icon_layer, weatherFont);
   layer_add_child(window_layer, text_layer_get_layer(s_weather_icon_layer));
 
   s_weather_text_layer = text_layer_create(GRect(87, 83, 55, 30));
   text_layer_set_text_color(s_weather_text_layer, GColorWhite);
   text_layer_set_background_color(s_weather_text_layer, GColorClear);
-  text_layer_set_font(s_weather_text_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_24)));
+  text_layer_set_font(s_weather_text_layer, font24);
   text_layer_set_text_alignment(s_weather_text_layer, GTextAlignmentRight);
   layer_add_child(window_layer, text_layer_get_layer(s_weather_text_layer));
 
@@ -379,12 +384,13 @@ void weather_load(){
 }
 
 void weather_unload() {
-  text_layer_destroy(s_weather_loc_layer);
+  text_layer_destroy(s_weather_icon_layer);
   text_layer_destroy(s_weather_text_layer);
   text_layer_destroy(s_weather_unit_layer);
-  text_layer_destroy(s_weather_icon_layer);
+  text_layer_destroy(s_weather_loc_layer);
   layer_destroy(s_weather_forecast_layer);
-  //free(forecast);
+  fonts_unload_custom_font(weatherFont);
+  fonts_unload_custom_font(font24);
 }
 
 void weather_init() {

@@ -13,3 +13,4 @@ extern Settings settings;
 
 void load_settings();
 void settings_init();
+void settings_deinit();
