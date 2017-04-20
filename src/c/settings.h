@@ -7,6 +7,8 @@ typedef struct {
   char weatherProvider;
   char weatherApiKey[20];
   bool forecast;
+  char viewMode;
+  char dateFormat;
 } Settings;
 
 extern Settings settings;

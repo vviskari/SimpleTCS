@@ -7,6 +7,7 @@
 #include "weather.h"
 #include "calendar.h"
 #include "battery.h"
+#include "datetime.h"
 
 Settings settings;
 static EventHandle handle;
@@ -33,6 +34,14 @@ static void conf_inbox_received_handler(DictionaryIterator *iter, void *context)
     settings.weatherTemp = conf->value->cstring[0];
   }
 
+  conf = dict_find(iter, MESSAGE_KEY_df);
+  if (conf) {
+    settings.dateFormat = conf->value->cstring[0];
+    time_t now = time(NULL);
+    struct tm *current_time = localtime(&now);
+    handle_time(current_time, MINUTE_UNIT);
+  }
+
   conf = dict_find(iter, MESSAGE_KEY_wf);
   if (conf) {
     bool old = settings.forecast;
@@ -45,6 +54,16 @@ static void conf_inbox_received_handler(DictionaryIterator *iter, void *context)
     }
   }
 
+  conf = dict_find(iter, MESSAGE_KEY_vm);
+  if (conf) {
+    settings.viewMode = conf->value->cstring[0];
+    if (settings.viewMode == 'c') {
+      set_show_forecast(false);
+    } else if (settings.viewMode == 'f') {
+      set_show_forecast(true);
+    }
+  }
+  
   conf = dict_find(iter, MESSAGE_KEY_wp);
   if (conf) {
     char old = settings.weatherProvider;
@@ -77,6 +96,8 @@ void load_settings() {
   settings.weatherTemp = 'C';
   settings.weatherProvider = 'y';
   settings.forecast = false;
+  settings.viewMode = 's'; // s, c, f
+  settings.dateFormat = 'e'; // e, u
 
   if (persist_exists(SETTINGS_KEY)) {
     persist_read_data(SETTINGS_KEY, &settings, sizeof(settings));

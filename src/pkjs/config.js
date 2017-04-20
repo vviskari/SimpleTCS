@@ -25,6 +25,56 @@ module.exports = [
             "value": "s" 
           }
         ]
+      },
+      {
+        "type": "select",
+        "messageKey": "df",
+        "defaultValue": "e",
+        "label": "Date format:",
+        "options": [
+          { 
+            "label": "dd.MM.yyyy", 
+            "value": "1"
+          },
+          { 
+            "label": "MM/dd/yyyy",
+            "value": "2" 
+          },
+          { 
+            "label": "yyyy-MM-dd",
+            "value": "3"
+          },
+        ]
+          }
+    ]
+  },
+  {
+    "type": "section",
+    "items": [
+      {
+        "type": "radiogroup",
+        "messageKey": "vm",
+        "defaultValue": "s",
+        "label": "Watchface behaviour:",
+        "options": [
+          { 
+            "label": "Shake 3x to change", 
+            "value": "s"
+          },
+          { 
+            "label": "Show calendar", 
+            "value": "c"
+          },          
+          { 
+            "label": "Show forecast",
+            "value": "f"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "id": "idBehaviourDescription",
+        "defaultValue": "Select how the watchface should behave. Always display calendar or weather forecast, or switch between them with 3 shakes.",
       }
     ]
   },

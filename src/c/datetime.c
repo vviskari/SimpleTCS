@@ -1,12 +1,16 @@
 #include <pebble.h>
 #include "datetime.h"
 #include "global.h"
+#include "settings.h"
 
 static TextLayer *s_date_layer;
 static TextLayer *s_time_layer;
 static TextLayer *s_seconds_layer;
 static GFont font52;
 static GFont font32;
+const char df1[] = "%d.%m.%Y";
+const char df2[] = "%m/%d/%Y";
+const char df3[] = "%Y-%m-%d";
 
 static char weekdayname[6][7][15] = {
   {"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"},
@@ -49,9 +53,14 @@ void handle_time(struct tm* tick_time, TimeUnits units_changed) {
   static char s_date_text[] = "XXXXXXXXXXXXX, 12.12.1999";
   strftime(weekdaynumber, sizeof(weekdaynumber), "%u", tick_time);
 
-  static char dmy[] = "XXXXXXXXXXXXX, 12.12.1999";
-  strftime(dmy, sizeof(dmy), "%d.%m.%Y", tick_time);
-
+  static char dmy[] = "12.12.1999";
+  if (settings.dateFormat == '1') {
+    strftime(dmy, sizeof(dmy), df1, tick_time);
+  } else if (settings.dateFormat == '2') {
+    strftime(dmy, sizeof(dmy), df2, tick_time);
+  } else if (settings.dateFormat == '3') {
+    strftime(dmy, sizeof(dmy), df3, tick_time);
+  }
   snprintf(s_date_text, sizeof(s_date_text), "%s, %s", weekdayname[loc][atoi(weekdaynumber)-1], dmy);
   text_layer_set_text(s_date_layer, s_date_text);
 }
