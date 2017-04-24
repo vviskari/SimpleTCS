@@ -68,40 +68,40 @@ static void render_weather(GenericWeatherInfo *info) {
 
   switch(info->condition) {
     case GenericWeatherConditionClearSky:
-    condition = info->day ? WEATHER_CLEAR : WEATHER_CLEAR_NIGHT;
-    weatherColor = GColorYellow;
-    break;
+      condition = info->day ? WEATHER_CLEAR : WEATHER_CLEAR_NIGHT;
+      weatherColor = GColorYellow;
+      break;
     case GenericWeatherConditionScatteredClouds:
     case GenericWeatherConditionFewClouds:
-    condition = info->day ? WEATHER_PART_CLOUD : WEATHER_PART_CLOUD_NIGHT;
-    weatherColor = GColorYellow;
-    break;
+      condition = info->day ? WEATHER_PART_CLOUD : WEATHER_PART_CLOUD_NIGHT;
+      weatherColor = GColorYellow;
+      break;
     case GenericWeatherConditionBrokenClouds:
-    condition = WEATHER_CLOUD;
-    weatherColor = GColorLightGray;
-    break;
+      condition = WEATHER_CLOUD;
+      weatherColor = GColorLightGray;
+      break;
     case GenericWeatherConditionRain:
-    condition = WEATHER_RAIN;
-    weatherColor = GColorLightGray;
-    break;
+      condition = WEATHER_RAIN;
+      weatherColor = GColorLightGray;
+      break;
     case GenericWeatherConditionShowerRain:
-    condition = WEATHER_LIGHT_RAIN;
-    break;
+      condition = WEATHER_LIGHT_RAIN;
+      break;
     case GenericWeatherConditionThunderstorm:
-    condition = WEATHER_STORM;
-    break;
+      condition = WEATHER_STORM;
+      break;
     case GenericWeatherConditionSnow:
-    condition = WEATHER_SNOW;
-    weatherColor = GColorCyan;
-    break;
+      condition = WEATHER_SNOW;
+      weatherColor = GColorCyan;
+      break;
     case GenericWeatherConditionMist:
-    condition = WEATHER_FOG;
-    break;  
+      condition = WEATHER_FOG;
+      break;  
     case GenericWeatherConditionWind:
-    condition = WEATHER_WIND;
-    break;
+      condition = WEATHER_WIND;
+      break;
     default:
-    condition = WEATHER_UNKNOWN;
+      condition = WEATHER_UNKNOWN;
   }
 
   static char s_condition_text[2];
@@ -253,18 +253,18 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
       case GenericWeatherConditionClearSky:
       case GenericWeatherConditionScatteredClouds:        
       case GenericWeatherConditionFewClouds:
-        c = GColorYellow;
+        c = GColorChromeYellow;
         break;
       case GenericWeatherConditionBrokenClouds:
       case GenericWeatherConditionMist:
       case GenericWeatherConditionWind:
-        c = GColorLightGray;
+        c = GColorWhite;
         break;
       case GenericWeatherConditionShowerRain:
       case GenericWeatherConditionRain:
       case GenericWeatherConditionSnow:
       case GenericWeatherConditionThunderstorm:
-        c = GColorCyan;
+        c = GColorVividCerulean;
         break;
       default:
         c = GColorClear;
@@ -395,8 +395,7 @@ void weather_unload() {
 
 void weather_init() {
   generic_weather_init();
-  // TEMPORARY
-  //generic_weather_set_location((GenericWeatherCoordinates) {6016437,2492361});
+  // generic_weather_set_location((GenericWeatherCoordinates) {6016437,2492361});
   generic_weather_set_forecast(settings.forecast);
   generic_weather_load(WEATHER_KEY);
   if (settings.forecast) {
