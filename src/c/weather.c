@@ -396,7 +396,7 @@ void weather_unload() {
 
 void weather_init() {
   generic_weather_init();
-  generic_weather_set_location((GenericWeatherCoordinates) {6016437,2492361});
+  // generic_weather_set_location((GenericWeatherCoordinates) {6016437,2492361});
   generic_weather_set_forecast(settings.forecast);
   generic_weather_load(WEATHER_KEY);
   if (settings.forecast) {
