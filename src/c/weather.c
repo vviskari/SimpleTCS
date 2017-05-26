@@ -239,7 +239,8 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
     graphics_context_set_stroke_color(ctx, GColorDarkGray);
     int16_t t = params.maxValue;
     while(t > params.minValue) {
-      int16_t y = (t - params.minValue) * tempIntervalK / 1000;
+      int16_t y = ((t - params.minValue) * tempIntervalK / 1000) + 1;
+      APP_LOG(APP_LOG_LEVEL_INFO, "TEMP line %d %d", t, y);
       graphics_draw_line(ctx, GPoint(chartPaddingX+1, y-chartPaddingY), GPoint(F_WIDTH, y-chartPaddingY));
       t = settings.weatherTemp == 'C' ? t-5 : t-10;
     }
@@ -248,17 +249,17 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
   // Condition colors
   for (int i = 0; i<forecastSize; i++) {
     int16_t x = i*timeInterval/1000+chartPaddingX+1;
-    GColor c = GColorLightGray;
+    GColor c = GColorClear;
     switch(forecast[i].condition) {
       case GenericWeatherConditionClearSky:
       case GenericWeatherConditionScatteredClouds:        
       case GenericWeatherConditionFewClouds:
-        c = GColorChromeYellow;
+        c = GColorYellow;
         break;
       case GenericWeatherConditionBrokenClouds:
       case GenericWeatherConditionMist:
       case GenericWeatherConditionWind:
-        c = GColorWhite;
+        c = GColorDarkGray;
         break;
       case GenericWeatherConditionShowerRain:
       case GenericWeatherConditionRain:
@@ -375,7 +376,7 @@ void weather_load(){
   text_layer_set_text_alignment(s_weather_loc_layer, GTextAlignmentCenter);
   layer_add_child(window_layer, text_layer_get_layer(s_weather_loc_layer));
 
-  s_weather_forecast_layer = layer_create(GRect(2, 119, F_WIDTH, F_HEIGHT));
+  s_weather_forecast_layer = layer_create(GRect(2, 120, F_WIDTH, F_HEIGHT));
   layer_set_update_proc(s_weather_forecast_layer, forecast_update_proc);
   hide_forecast(true);
   layer_add_child(window_layer, s_weather_forecast_layer);
@@ -395,7 +396,7 @@ void weather_unload() {
 
 void weather_init() {
   generic_weather_init();
-  // generic_weather_set_location((GenericWeatherCoordinates) {6016437,2492361});
+  generic_weather_set_location((GenericWeatherCoordinates) {6016437,2492361});
   generic_weather_set_forecast(settings.forecast);
   generic_weather_load(WEATHER_KEY);
   if (settings.forecast) {
