@@ -1,4 +1,5 @@
 build
 node_modules
 .vscode
+.lock-waf_darwin_build
 
