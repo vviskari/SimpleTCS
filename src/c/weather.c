@@ -239,9 +239,9 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
     graphics_context_set_stroke_color(ctx, GColorDarkGray);
     int16_t t = params.maxValue;
     while(t > params.minValue) {
-      int16_t y = ((t - params.minValue) * tempIntervalK / 1000) + 1;
+      int16_t y = (params.maxValue - t) * tempIntervalK / 1000;
       APP_LOG(APP_LOG_LEVEL_INFO, "TEMP line %d %d", t, y);
-      graphics_draw_line(ctx, GPoint(chartPaddingX+1, y-chartPaddingY), GPoint(F_WIDTH, y-chartPaddingY));
+      graphics_draw_line(ctx, GPoint(chartPaddingX+1, y), GPoint(F_WIDTH, y));
       t = settings.weatherTemp == 'C' ? t-5 : t-10;
     }
   }
