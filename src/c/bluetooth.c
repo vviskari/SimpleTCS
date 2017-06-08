@@ -1,5 +1,5 @@
-#include <pebble.h>
 #include "bluetooth.h"
+#include <pebble.h>
 #include "global.h"
 #include "utils.h"
 
@@ -20,27 +20,25 @@ static void handle_bluetooth(bool connected) {
     s_bluetooth_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BT);
     lastconnected = true;
     if (!lastconnected && !userIsSleeping()) {
-      static uint32_t const segments[] = { 300, 100, 100, 100, 100 };
+      static uint32_t const segments[] = {300, 100, 100, 100, 100};
       VibePattern pat = {
-        .durations = segments,
-        .num_segments = ARRAY_LENGTH(segments),
+          .durations = segments, .num_segments = ARRAY_LENGTH(segments),
       };
       vibes_enqueue_custom_pattern(pat);
     }
   } else {
-    #if defined(PBL_BW)
+#if defined(PBL_BW)
     text_layer_set_text_color(s_connection_layer, GColorWhite);
     s_bluetooth_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BT);
-    #else
+#else
     text_layer_set_text_color(s_connection_layer, GColorRed);
     s_bluetooth_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_NOBT);
-    #endif
+#endif
     lastconnected = false;
     if (!userIsSleeping()) {
-      static uint32_t const segments[] = { 300, 300, 300, 300, 300 };
+      static uint32_t const segments[] = {300, 300, 300, 300, 300};
       VibePattern pat = {
-        .durations = segments,
-        .num_segments = ARRAY_LENGTH(segments),
+          .durations = segments, .num_segments = ARRAY_LENGTH(segments),
       };
       vibes_enqueue_custom_pattern(pat);
     }
@@ -62,9 +60,7 @@ void bluetooth_load() {
 
   layer_add_child(window_layer, text_layer_get_layer(s_connection_layer));
 
-  connection_service_subscribe((ConnectionHandlers) {
-    .pebble_app_connection_handler = handle_bluetooth
-  });
+  connection_service_subscribe((ConnectionHandlers){.pebble_app_connection_handler = handle_bluetooth});
 }
 
 void bluetooth_unload() {

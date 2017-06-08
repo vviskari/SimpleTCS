@@ -2,21 +2,21 @@
 // Simple TCS watchface for Pebble (Time series)
 //
 // Based on "Simple Time and Calendar" by Michael S.
-// 
+//
 
-#include <pebble.h>
-#include <pebble-generic-weather/pebble-generic-weather.h>
 #include <pebble-events/pebble-events.h>
+#include <pebble-generic-weather/pebble-generic-weather.h>
+#include <pebble.h>
 
-#include "global.h"
-#include "utils.h"
-#include "bluetooth.h"
-#include "weather.h"
-#include "datetime.h"
-#include "steps.h"
-#include "settings.h"
-#include "calendar.h"
 #include "battery.h"
+#include "bluetooth.h"
+#include "calendar.h"
+#include "datetime.h"
+#include "global.h"
+#include "settings.h"
+#include "steps.h"
+#include "utils.h"
+#include "weather.h"
 
 // Globals
 Window *s_main_window;
@@ -41,10 +41,10 @@ void set_show_forecast(bool show) {
   hide_battery_estimate(show_forecast);
 }
 
-static void handle_minute_tick(struct tm* tick_time, TimeUnits units_changed) {
+static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
   handle_time(tick_time, units_changed);
   if (tick_time->tm_sec == 0) {
-    if (tick_time->tm_min == 0){ 
+    if (tick_time->tm_min == 0) {
       // Draw calendar every hour on the hour
       drawcal();
       if (tick_time->tm_hour == 0) {
@@ -53,17 +53,17 @@ static void handle_minute_tick(struct tm* tick_time, TimeUnits units_changed) {
       }
     }
     // Steps every 5 mins
-    if(tick_time->tm_min % 5 == 0) {
+    if (tick_time->tm_min % 5 == 0) {
       handle_steps();
     }
     // Update weather twice an hour
-    if(tick_time->tm_min % 30 == 0) {
+    if (tick_time->tm_min % 30 == 0) {
       handle_weather(true);
     }
   }
 }
 
-static void handle_second_tick(struct tm* tick_time, TimeUnits units_changed) {
+static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
   secondticks++;
   shaketicks++;
 
@@ -75,7 +75,7 @@ static void handle_second_tick(struct tm* tick_time, TimeUnits units_changed) {
       show_seconds = !show_seconds;
       hide_weather(show_seconds);
       hide_seconds(!show_seconds);
-      secondticks = show_seconds ? 1 : MAX_SECONDS+1;
+      secondticks = show_seconds ? 1 : MAX_SECONDS + 1;
     }
     if (shakes == 3 && settings.forecast && settings.viewMode == 's') {
       shakes = 0;
@@ -87,19 +87,19 @@ static void handle_second_tick(struct tm* tick_time, TimeUnits units_changed) {
       tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
       return;
     }
-  } 
+  }
 
   if (show_seconds && secondticks <= MAX_SECONDS) {
     handle_seconds(tick_time);
   }
 
   if (secondticks > MAX_SECONDS) {
-    secondticks=0;
+    secondticks = 0;
     show_seconds = false;
     hide_seconds(true);
     hide_weather(false);
     tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
-  }  
+  }
 }
 
 static void tap_handler(AccelAxisType axis, int32_t direction) {
@@ -115,9 +115,7 @@ static void load_window_state() {
   }
 }
 
-static void save_window_state() {
-  persist_write_bool(FORECAST_TOGGLE_KEY, show_forecast);
-}
+static void save_window_state() { persist_write_bool(FORECAST_TOGGLE_KEY, show_forecast); }
 
 static void main_window_load(Window *window) {
   bluetooth_load();
@@ -144,7 +142,7 @@ static void main_window_unload(Window *window) {
   weather_unload();
   steps_unload();
   save_window_state();
-  
+
   accel_tap_service_unsubscribe();
   tick_timer_service_unsubscribe();
 }
@@ -157,10 +155,9 @@ static void init() {
 
   s_main_window = window_create();
   window_set_background_color(s_main_window, GColorBlack);
-  window_set_window_handlers(s_main_window, (WindowHandlers) {
-    .load = main_window_load,
-    .unload = main_window_unload,
-  });
+  window_set_window_handlers(s_main_window, (WindowHandlers){
+                                                .load = main_window_load, .unload = main_window_unload,
+                                            });
   window_stack_push(s_main_window, true);
 }
 

@@ -1,13 +1,13 @@
-#include <pebble.h>
 #include <pebble-events/pebble-events.h>
+#include <pebble.h>
 
+#include "battery.h"
+#include "calendar.h"
+#include "datetime.h"
+#include "global.h"
 #include "settings.h"
 #include "utils.h"
-#include "global.h"
 #include "weather.h"
-#include "calendar.h"
-#include "battery.h"
-#include "datetime.h"
 
 Settings settings;
 static EventHandle handle;
@@ -18,9 +18,9 @@ static void save_settings() {
 
 static void conf_inbox_received_handler(DictionaryIterator *iter, void *context) {
   bool updateWeather = false;
-  
+
   Tuple *conf = dict_find(iter, MESSAGE_KEY_wsd);
-  if(conf) {
+  if (conf) {
     char old = settings.weekStartDay;
     settings.weekStartDay = conf->value->cstring[0];
     if (old != settings.weekStartDay) {
@@ -63,7 +63,7 @@ static void conf_inbox_received_handler(DictionaryIterator *iter, void *context)
       set_show_forecast(true);
     }
   }
-  
+
   conf = dict_find(iter, MESSAGE_KEY_wp);
   if (conf) {
     char old = settings.weatherProvider;
@@ -82,7 +82,7 @@ static void conf_inbox_received_handler(DictionaryIterator *iter, void *context)
     char old[20];
     strncpy(old, settings.weatherApiKey, 20);
     strncpy(settings.weatherApiKey, conf->value->cstring, 20);
-    if (strcmp(old, settings.weatherApiKey)!=0) {
+    if (strcmp(old, settings.weatherApiKey) != 0) {
       updateWeather = true;
     }
   }
@@ -96,13 +96,12 @@ void load_settings() {
   settings.weatherTemp = 'C';
   settings.weatherProvider = 'y';
   settings.forecast = false;
-  settings.viewMode = 's'; // s, c, f
-  settings.dateFormat = 'e'; // e, u
+  settings.viewMode = 's';    // s, c, f
+  settings.dateFormat = 'e';  // e, u
 
   if (persist_exists(SETTINGS_KEY)) {
     persist_read_data(SETTINGS_KEY, &settings, sizeof(settings));
   }
-
 }
 
 void settings_init() {

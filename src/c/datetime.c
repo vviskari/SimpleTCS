@@ -1,5 +1,5 @@
-#include <pebble.h>
 #include "datetime.h"
+#include <pebble.h>
 #include "global.h"
 #include "settings.h"
 
@@ -12,38 +12,36 @@ const char df1[] = "%d.%m.%Y";
 const char df2[] = "%m/%d/%Y";
 const char df3[] = "%Y-%m-%d";
 
-static char weekdayname[6][7][15] = {
-  {"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"},
-  {"Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"},
-  {"lunes","martes","miércoles","jueves","viernes","sábado","domingo"},
-  {"Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"},
-  {"Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"},
-  {"Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo"}
-};
+static char weekdayname[6][7][15] = {{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"},
+                                     {"Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"},
+                                     {"lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"},
+                                     {"Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"},
+                                     {"Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"},
+                                     {"Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"}};
 
-void handle_time(struct tm* tick_time, TimeUnits units_changed) {
+void handle_time(struct tm *tick_time, TimeUnits units_changed) {
   char weekdaynumber[] = "0";
   char *sys_locale = setlocale(LC_ALL, "");
   static int loc = 0;
 
   if (strcmp("de_DE", sys_locale) == 0) {
-    loc=1;
+    loc = 1;
   } else if (strcmp("es_ES", sys_locale) == 0) {
-    loc=2;
+    loc = 2;
   } else if (strcmp("fr_FR", sys_locale) == 0) {
-    loc=3;
+    loc = 3;
   } else if (strcmp("it_IT", sys_locale) == 0) {
-    loc=4;
+    loc = 4;
   } else if (strcmp("pt_PT", sys_locale) == 0) {
-    loc=5;
+    loc = 5;
   } else {
-    loc=0;
+    loc = 0;
   }
 
   // Time
   static char s_time_text[] = "00:00";
   if (clock_is_24h_style()) {
-    strftime(s_time_text, sizeof(s_time_text), "%H:%M", tick_time);    
+    strftime(s_time_text, sizeof(s_time_text), "%H:%M", tick_time);
   } else {
     strftime(s_time_text, sizeof(s_time_text), "%I:%M", tick_time);
   }
@@ -61,11 +59,11 @@ void handle_time(struct tm* tick_time, TimeUnits units_changed) {
   } else if (settings.dateFormat == '3') {
     strftime(dmy, sizeof(dmy), df3, tick_time);
   }
-  snprintf(s_date_text, sizeof(s_date_text), "%s, %s", weekdayname[loc][atoi(weekdaynumber)-1], dmy);
+  snprintf(s_date_text, sizeof(s_date_text), "%s, %s", weekdayname[loc][atoi(weekdaynumber) - 1], dmy);
   text_layer_set_text(s_date_layer, s_date_text);
 }
 
-void handle_seconds(struct tm* tick_time) {
+void handle_seconds(struct tm *tick_time) {
   if (!tick_time) {
     text_layer_set_text(s_seconds_layer, "");
   } else {
@@ -75,15 +73,13 @@ void handle_seconds(struct tm* tick_time) {
   }
 }
 
-void hide_seconds(bool hide) {
-  layer_set_hidden((Layer *) s_seconds_layer, hide);
-}
+void hide_seconds(bool hide) { layer_set_hidden((Layer *)s_seconds_layer, hide); }
 
 void datetime_load() {
   Layer *window_layer = window_get_root_layer(s_main_window);
   font52 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_52));
   font32 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_32));
-  
+
   s_time_layer = text_layer_create(GRect(0, 28, 144, 55));
   text_layer_set_text_color(s_time_layer, GColorWhite);
   text_layer_set_background_color(s_time_layer, GColorClear);
@@ -99,11 +95,11 @@ void datetime_load() {
   layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
 
   s_seconds_layer = text_layer_create(GRect(100, 80, 50, 40));
-  #if defined(PBL_BW)
+#if defined(PBL_BW)
   text_layer_set_text_color(s_seconds_layer, GColorWhite);
-  #else
+#else
   text_layer_set_text_color(s_seconds_layer, GColorOrange);
-  #endif
+#endif
   text_layer_set_background_color(s_seconds_layer, GColorClear);
   text_layer_set_font(s_seconds_layer, font32);
   layer_add_child(window_layer, text_layer_get_layer(s_seconds_layer));
