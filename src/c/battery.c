@@ -20,6 +20,7 @@ static void estimate_battery(BatteryChargeState charge_state) {
   if (persist_exists(BATT_CHARGING_KEY)) {
     lastCharging = persist_read_bool(BATT_CHARGING_KEY);
   }
+  persist_delete(BATT_CHARGING_KEY);
   persist_write_bool(BATT_CHARGING_KEY, charge_state.is_plugged);
 
   // skip everything, if charging
@@ -73,7 +74,7 @@ static void estimate_battery(BatteryChargeState charge_state) {
   int estimatedBatteryLife = (-historyChargePercent + history.slope * historyTimeHours) / history.slope * 60 * 60;
   // APP_LOG(APP_LOG_LEVEL_INFO, "Estimated battery life until %d",
   // estimatedBatteryLife);
-
+  persist_delete(BATT_HISTORY_KEY);
   persist_write_data(BATT_HISTORY_KEY, &history, sizeof(BatteryHistory));
 
   ///////////////

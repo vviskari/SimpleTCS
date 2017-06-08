@@ -115,7 +115,10 @@ static void load_window_state() {
   }
 }
 
-static void save_window_state() { persist_write_bool(FORECAST_TOGGLE_KEY, show_forecast); }
+static void save_window_state() { 
+  persist_delete(FORECAST_TOGGLE_KEY);
+  persist_write_bool(FORECAST_TOGGLE_KEY, show_forecast);
+}
 
 static void main_window_load(Window *window) {
   bluetooth_load();

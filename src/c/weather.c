@@ -129,7 +129,7 @@ static void weather_callback(GenericWeatherInfo *info, GenericWeatherForecast *_
         params.maxTemp = params.maxTemp < temp ? temp : params.maxTemp;
         params.minTemp = params.minTemp > temp ? temp : params.minTemp;
         params.maxTime = params.maxTime < time ? time : params.maxTime;
-        params.minTime = p(arams.minTime == 0 || params.minTime > time) ? time : params.minTime;
+        params.minTime = (params.minTime == 0 || params.minTime > time) ? time : params.minTime;
       }
 
       // Floor and ceil the min and max temperature
@@ -215,7 +215,7 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
     int16_t t = params.maxValue;
     while (t > params.minValue) {
       int16_t y = (params.maxValue - t) * tempIntervalK / 1000;
-      APP_LOG(APP_LOG_LEVEL_INFO, "TEMP line %d %d", t, y);
+      //APP_LOG(APP_LOG_LEVEL_INFO, "TEMP line %d %d", t, y);
       graphics_draw_line(ctx, GPoint(chartPaddingX + 1, y), GPoint(F_WIDTH, y));
       t = settings.weatherTemp == 'C' ? t - 5 : t - 10;
     }

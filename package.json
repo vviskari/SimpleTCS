@@ -2,7 +2,7 @@
     "author": "ville.viskari@gmail.com",
     "dependencies": {
         "pebble-clay": "1.0.4",
-        "pebble-generic-weather": "https://builds.cloudpebble.net/93f5b5e4-028f-413f-9e3a-44964df7baaa/package.tar.gz"
+        "pebble-generic-weather": "https://builds.cloudpebble.net/5cc59fac-338a-4c65-b5dc-90326658dda9/package.tar.gz"
     },
     "keywords": [],
     "name": "simple-tcs",
@@ -72,7 +72,7 @@
                 {
                     "characterRegex": "[.0-9:\u02da-]",
                     "file": "fonts/OpenSans-Regular.ttf",
-                    "name": "FONT_OPEN_24",
+                    "name": "FONT_OPEN_52",
                     "targetPlatforms": null,
                     "type": "font"
                 },
@@ -86,7 +86,7 @@
                 {
                     "characterRegex": "[.0-9:\u02da-]",
                     "file": "fonts/OpenSans-Regular.ttf",
-                    "name": "FONT_OPEN_52",
+                    "name": "FONT_OPEN_24",
                     "targetPlatforms": null,
                     "type": "font"
                 }
@@ -103,5 +103,5 @@
             "watchface": true
         }
     },
-    "version": "2.9.0"
+    "version": "2.10.0"
 }
