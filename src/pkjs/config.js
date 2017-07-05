@@ -51,9 +51,14 @@ module.exports = [{
                 "messageKey": "vm",
                 "defaultValue": "s",
                 "label": "Watchface behaviour:",
-                "options": [{
+                "options": [
+                    {
                         "label": "Shake 3x to change",
                         "value": "s"
+                    },
+                    {
+                        "label": "Shake 2x to change",
+                        "value": "t"
                     },
                     {
                         "label": "Show calendar",
@@ -68,7 +73,7 @@ module.exports = [{
             {
                 "type": "text",
                 "id": "idBehaviourDescription",
-                "defaultValue": "Select how the watchface should behave. Always display calendar or weather forecast, or switch between them with 3 shakes.",
+                "defaultValue": "Select how the watchface should behave. Always display calendar or weather forecast, or switch between them with 3 shakes. Selecting '2 shakes' will first switch to seconds and then another 2 will change mode.",
             }
         ]
     },

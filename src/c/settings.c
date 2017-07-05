@@ -97,7 +97,7 @@ void load_settings() {
   settings.weatherTemp = 'C';
   settings.weatherProvider = 'y';
   settings.forecast = false;
-  settings.viewMode = 's';    // s, c, f
+  settings.viewMode = 's';    // s, t, c, f
   settings.dateFormat = 'e';  // e, u
 
   if (persist_exists(SETTINGS_KEY)) {

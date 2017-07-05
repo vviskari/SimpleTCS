@@ -70,35 +70,55 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
   if (tick_time->tm_sec == 0) {
     handle_minute_tick(tick_time, units_changed);
   }
+
   if (shaketicks % 2 == 0) {
-    if (shakes == 2) {
+
+    if (settings.viewMode != 't') {
+      if (shakes == 2) {
+        show_seconds = !show_seconds;
+        hide_weather(show_seconds);
+        hide_seconds(!show_seconds);
+        secondticks = show_seconds ? 1 : MAX_SECONDS + 1;
+      } else if (shakes == 3 && settings.forecast && settings.viewMode == 's') {
+        shakes = 0;
+        // toggle forecast
+        set_show_forecast(!show_forecast);
+      }
+
+    } else if (shakes == 2) {
+      // viewMode == t, shake 2 times to switch
+      if (show_seconds && settings.forecast) {
+        // toggle forecast if showing seconds right now
+        set_show_forecast(!show_forecast);
+      }
       show_seconds = !show_seconds;
       hide_weather(show_seconds);
       hide_seconds(!show_seconds);
       secondticks = show_seconds ? 1 : MAX_SECONDS + 1;
     }
-    if (shakes == 3 && settings.forecast && settings.viewMode == 's') {
-      shakes = 0;
-      // toggle forecast
-      set_show_forecast(!show_forecast);
-    }
+
+    // reset shakes every 2 seconds
     shaketicks = shakes = 0;
+
     if (!show_seconds) {
       tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
       return;
+    }    
+  }
+
+  if (show_seconds) {
+    if (secondticks <= MAX_SECONDS) {
+      handle_seconds(tick_time);
+    } else {
+      APP_LOG(APP_LOG_LEVEL_INFO, "reset seconds, was %d", secondticks);
+      secondticks = 0;
+      show_seconds = false;
+      hide_seconds(true);
+      hide_weather(false);
+      tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
     }
-  }
-
-  if (show_seconds && secondticks <= MAX_SECONDS) {
-    handle_seconds(tick_time);
-  }
-
-  if (secondticks > MAX_SECONDS) {
+  } else {
     secondticks = 0;
-    show_seconds = false;
-    hide_seconds(true);
-    hide_weather(false);
-    tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
   }
 }
 
@@ -159,8 +179,8 @@ static void init() {
   s_main_window = window_create();
   window_set_background_color(s_main_window, GColorBlack);
   window_set_window_handlers(s_main_window, (WindowHandlers){
-                                                .load = main_window_load, .unload = main_window_unload,
-                                            });
+    .load = main_window_load, .unload = main_window_unload,
+  });
   window_stack_push(s_main_window, true);
 }
 
