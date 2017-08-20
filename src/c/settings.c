@@ -98,7 +98,7 @@ void load_settings() {
   settings.weatherProvider = 'y';
   settings.forecast = false;
   settings.viewMode = 's';    // s, t, c, f
-  settings.dateFormat = 'e';  // e, u
+  settings.dateFormat = '1';  // 1, 2, 3
 
   if (persist_exists(SETTINGS_KEY)) {
     persist_read_data(SETTINGS_KEY, &settings, sizeof(settings));

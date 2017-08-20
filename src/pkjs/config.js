@@ -1,4 +1,4 @@
-module.exports = [{
+wemodule.exports = [{
         "type": "heading",
         "defaultValue": "Simple TCS: Configuration"
     },
@@ -26,7 +26,7 @@ module.exports = [{
             {
                 "type": "select",
                 "messageKey": "df",
-                "defaultValue": "e",
+                "defaultValue": "1",
                 "label": "Date format:",
                 "options": [{
                         "label": "dd.MM.yyyy",
