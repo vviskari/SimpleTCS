@@ -1,4 +1,4 @@
-wemodule.exports = [{
+module.exports = [{
         "type": "heading",
         "defaultValue": "Simple TCS: Configuration"
     },

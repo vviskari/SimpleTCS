@@ -1,7 +1,7 @@
 {
     "author": "ville.viskari@gmail.com",
     "dependencies": {
-        "pebble-clay": "1.0.4",
+        "pebble-clay": "^1.0.4",
         "pebble-generic-weather": "https://builds.cloudpebble.net/5cc59fac-338a-4c65-b5dc-90326658dda9/package.tar.gz"
     },
     "keywords": [],
@@ -103,5 +103,5 @@
             "watchface": true
         }
     },
-    "version": "2.12.0"
+    "version": "2.13.0"
 }
