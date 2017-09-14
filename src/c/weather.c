@@ -250,7 +250,7 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
     graphics_fill_rect(ctx, conditionRect, 0, GCornerNone);
   }
 #endif
-
+  // Temp line graph
   GPoint start = GPoint(-1, -1);
   graphics_context_set_stroke_width(ctx, 3);
   graphics_context_set_stroke_color(ctx, GColorWhite);
