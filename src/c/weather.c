@@ -239,17 +239,19 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
     rect_bounds = GRect(-2, -4, 17, 10);
     bool evenHours = false;
 
-    // start from 2, skip first 2 so we're not too close to the Y-axel
-    for (int i = 2; i < forecastSize; i++) {
-      time_t time = forecast[i].timestamp + 3600;
+    // skip first forecast so its not too close to Y axis
+    for (int i = 1; i < forecastSize; i++) {
+      time_t time = forecast[i].timestamp;
       char s_hour[3];
       strftime(s_hour, 3, "%H", localtime(&time));
       int hour = atoi(s_hour);
-      if (i == 2) {
+      if (i == 1) {
         // with WU we have one point every 2 hours. check if they are even or odd
         evenHours = hour % 2 == 0;
       }
+
       if ((evenHours && hour % 12 == 0) || (!evenHours && hour % 12 == 1)) {
+
         // move 12h mark back 1 hour if odd hours
         int16_t x = (i - (hour % 2)) * timeInterval / 1000 + chartPaddingX;
         graphics_draw_line(ctx, GPoint(x, 0), GPoint(x, F_HEIGHT - chartPaddingY - 1));
@@ -398,8 +400,6 @@ void weather_unload() {
 
 void weather_init() {
   generic_weather_init();
-  // generic_weather_set_location((GenericWeatherCoordinates)
-  // {6016437,2492361});
   generic_weather_set_forecast(settings.forecast);
   generic_weather_load(WEATHER_KEY);
   if (settings.forecast) {
