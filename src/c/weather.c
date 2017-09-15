@@ -67,40 +67,40 @@ static void render_weather(GenericWeatherInfo *info) {
 
   switch (info->condition) {
     case GenericWeatherConditionClearSky:
-    condition = info->day ? WEATHER_CLEAR : WEATHER_CLEAR_NIGHT;
-    weatherColor = GColorYellow;
-    break;
+      condition = info->day ? WEATHER_CLEAR : WEATHER_CLEAR_NIGHT;
+      weatherColor = GColorYellow;
+      break;
     case GenericWeatherConditionScatteredClouds:
     case GenericWeatherConditionFewClouds:
-    condition = info->day ? WEATHER_PART_CLOUD : WEATHER_PART_CLOUD_NIGHT;
-    weatherColor = GColorYellow;
-    break;
+      condition = info->day ? WEATHER_PART_CLOUD : WEATHER_PART_CLOUD_NIGHT;
+      weatherColor = GColorYellow;
+      break;
     case GenericWeatherConditionBrokenClouds:
-    condition = WEATHER_CLOUD;
-    weatherColor = GColorLightGray;
-    break;
+      condition = WEATHER_CLOUD;
+      weatherColor = GColorLightGray;
+      break;
     case GenericWeatherConditionRain:
-    condition = WEATHER_RAIN;
-    weatherColor = GColorLightGray;
-    break;
+      condition = WEATHER_RAIN;
+      weatherColor = GColorLightGray;
+      break;
     case GenericWeatherConditionShowerRain:
-    condition = WEATHER_LIGHT_RAIN;
-    break;
+      condition = WEATHER_LIGHT_RAIN;
+      break;
     case GenericWeatherConditionThunderstorm:
-    condition = WEATHER_STORM;
-    break;
+      condition = WEATHER_STORM;
+      break;
     case GenericWeatherConditionSnow:
-    condition = WEATHER_SNOW;
-    weatherColor = GColorCyan;
-    break;
+      condition = WEATHER_SNOW;
+      weatherColor = GColorCyan;
+      break;
     case GenericWeatherConditionMist:
-    condition = WEATHER_FOG;
-    break;
+      condition = WEATHER_FOG;
+      break;
     case GenericWeatherConditionWind:
-    condition = WEATHER_WIND;
-    break;
+      condition = WEATHER_WIND;
+      break;
     default:
-    condition = WEATHER_UNKNOWN;
+      condition = WEATHER_UNKNOWN;
   }
 
   static char s_condition_text[2];
@@ -143,7 +143,7 @@ static void weather_callback(GenericWeatherInfo *info, GenericWeatherForecast *_
   forecast = peek.forecast;
   forecastSize = peek.forecastSize;
   params = (ForecastParams){
-    .maxTemp = -1000, .minTemp = 1000, .maxValue = -1000, .minValue = 1000, .maxTime = 0, .minTime = 0};
+      .maxTemp = -1000, .minTemp = 1000, .maxValue = -1000, .minValue = 1000, .maxTime = 0, .minTime = 0};
 
   for (int i = 0; i < forecastSize; i++) {
     int16_t temp = settings.weatherTemp == 'C' ? forecast[i].temp_c : forecast[i].temp_f;
@@ -175,22 +175,22 @@ static void weather_callback(GenericWeatherInfo *info, GenericWeatherForecast *_
 static void js_ready_handler(void *context) {
   switch (settings.weatherProvider) {
     case 'y':
-    generic_weather_set_provider(GenericWeatherProviderYahooWeather);
-    break;
+      generic_weather_set_provider(GenericWeatherProviderYahooWeather);
+      break;
     case 'o':
-    generic_weather_set_provider(GenericWeatherProviderOpenWeatherMap);
-    generic_weather_set_api_key(settings.weatherApiKey);
-    break;
+      generic_weather_set_provider(GenericWeatherProviderOpenWeatherMap);
+      generic_weather_set_api_key(settings.weatherApiKey);
+      break;
     case 'w':
-    generic_weather_set_provider(GenericWeatherProviderWeatherUnderground);
-    generic_weather_set_api_key(settings.weatherApiKey);
-    break;
+      generic_weather_set_provider(GenericWeatherProviderWeatherUnderground);
+      generic_weather_set_api_key(settings.weatherApiKey);
+      break;
     case 'f':
-    generic_weather_set_provider(GenericWeatherProviderForecastIo);
-    generic_weather_set_api_key(settings.weatherApiKey);
-    break;
+      generic_weather_set_provider(GenericWeatherProviderForecastIo);
+      generic_weather_set_api_key(settings.weatherApiKey);
+      break;
     default:
-    generic_weather_set_provider(GenericWeatherProviderUnknown);
+      generic_weather_set_provider(GenericWeatherProviderUnknown);
   }
   generic_weather_set_forecast(settings.forecast);
   generic_weather_fetch(weather_callback);
@@ -219,19 +219,19 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
   graphics_draw_line(ctx, GPoint(chartPaddingX, 0), GPoint(chartPaddingX, F_HEIGHT - chartPaddingY));
   graphics_draw_line(ctx, GPoint(chartPaddingX, F_HEIGHT - chartPaddingY), GPoint(F_WIDTH, F_HEIGHT - chartPaddingY));
 
-  #if defined(PBL_COLOR)
+#if defined(PBL_COLOR)
   // temperature lines
   if (true) {
     graphics_context_set_stroke_color(ctx, GColorDarkGray);
     int16_t t = params.maxValue;
     while (t > params.minValue) {
       int16_t y = (params.maxValue - t) * tempIntervalK / 1000;
-      //APP_LOG(APP_LOG_LEVEL_INFO, "TEMP line %d %d", t, y);
+      // APP_LOG(APP_LOG_LEVEL_INFO, "TEMP line %d %d", t, y);
       graphics_draw_line(ctx, GPoint(chartPaddingX + 1, y), GPoint(F_WIDTH, y));
       t = settings.weatherTemp == 'C' ? t - 5 : t - 10;
     }
   }
-  
+
   // time markers
   if (true) {
     graphics_context_set_stroke_color(ctx, GColorDarkGray);
@@ -241,7 +241,7 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
 
     // start from 2, skip first 2 so we're not too close to the Y-axel
     for (int i = 2; i < forecastSize; i++) {
-      time_t time = forecast[i].timestamp+3600;
+      time_t time = forecast[i].timestamp + 3600;
       char s_hour[3];
       strftime(s_hour, 3, "%H", localtime(&time));
       int hour = atoi(s_hour);
@@ -249,13 +249,13 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
         // with WU we have one point every 2 hours. check if they are even or odd
         evenHours = hour % 2 == 0;
       }
-      if ( (evenHours && hour % 12 == 0) || (!evenHours && hour % 12 == 1) ) {
+      if ((evenHours && hour % 12 == 0) || (!evenHours && hour % 12 == 1)) {
         // move 12h mark back 1 hour if odd hours
-        int16_t x = (i - (hour % 2)) * timeInterval/1000 + chartPaddingX;
+        int16_t x = (i - (hour % 2)) * timeInterval / 1000 + chartPaddingX;
         graphics_draw_line(ctx, GPoint(x, 0), GPoint(x, F_HEIGHT - chartPaddingY - 1));
 
         // hour number below X
-        snprintf(s_hour, sizeof(s_hour), "%02d", hour-(hour%2));
+        snprintf(s_hour, sizeof(s_hour), "%02d", hour - (hour % 2));
         rect_bounds = GRect(x - 6, F_HEIGHT - 11, 12, 10);
         graphics_draw_text(ctx, s_hour, font, rect_bounds, GTextOverflowModeFill, GTextAlignmentCenter, NULL);
       }
@@ -270,27 +270,27 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
       case GenericWeatherConditionClearSky:
       case GenericWeatherConditionScatteredClouds:
       case GenericWeatherConditionFewClouds:
-      c = GColorYellow;
-      break;
+        c = GColorYellow;
+        break;
       case GenericWeatherConditionBrokenClouds:
       case GenericWeatherConditionMist:
       case GenericWeatherConditionWind:
-      c = GColorDarkGray;
-      break;
+        c = GColorDarkGray;
+        break;
       case GenericWeatherConditionShowerRain:
       case GenericWeatherConditionRain:
       case GenericWeatherConditionSnow:
       case GenericWeatherConditionThunderstorm:
-      c = GColorVividCerulean;
-      break;
+        c = GColorVividCerulean;
+        break;
       default:
-      c = GColorClear;
+        c = GColorClear;
     }
     graphics_context_set_fill_color(ctx, c);
     GRect conditionRect = GRect(x, F_HEIGHT - chartPaddingY - 5, timeInterval / 1000 + 1, 5);
     graphics_fill_rect(ctx, conditionRect, 0, GCornerNone);
   }
-  #endif
+#endif
   // Temp line graph
   GPoint start = GPoint(-1, -1);
   graphics_context_set_stroke_width(ctx, 3);
@@ -298,7 +298,7 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
   for (int i = 0; i < forecastSize; i++) {
     int16_t x = i * timeInterval / 1000 + (timeInterval / 2000);
     int16_t y = ((settings.weatherTemp == 'C' ? forecast[i].temp_c : forecast[i].temp_f) - params.minValue) *
-      tempIntervalK / 1000;
+                tempIntervalK / 1000;
     x = x + chartPaddingX;
     y = y + chartPaddingY;
     GPoint end = GPoint(x, F_HEIGHT - y);
@@ -319,21 +319,6 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
   rect_bounds = GRect(-2, F_HEIGHT - 13 - chartPaddingY, 17, 10);
   snprintf(s_temp_text, sizeof(s_temp_text), "%d", params.minValue);
   graphics_draw_text(ctx, s_temp_text, font, rect_bounds, GTextOverflowModeFill, GTextAlignmentRight, NULL);
-
-  // X-times
-  /*
-  font = fonts_get_system_font(FONT_KEY_GOTHIC_09);
-  int idx = forecastSize / 3;
-  time_t time = forecast[idx].timestamp;
-  static char hour[3];
-  strftime(hour, 3, "%H", localtime(&time));
-
-  idx = forecastSize * 2 / 3;
-  time = forecast[idx].timestamp;
-  strftime(hour, 3, "%H", localtime(&time));
-  rect_bounds = GRect(idx * timeInterval / 1000 + chartPaddingX - 6, F_HEIGHT - 11, 12, 10);
-  graphics_draw_text(ctx, hour, font, rect_bounds, GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-  */
 }
 
 void handle_weather(bool refresh) {
