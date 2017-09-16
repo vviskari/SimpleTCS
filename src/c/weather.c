@@ -250,9 +250,8 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
         evenHours = hour % 2 == 0;
       }
 
-      if ((evenHours && hour % 12 == 0) || (!evenHours && hour % 12 == 1)) {
-
-        // move 12h mark back 1 hour if odd hours
+      if ((evenHours && hour % 6 == 0) || (!evenHours && hour % 6 == 1)) {
+        // move H mark back 1 hour if odd hours
         int16_t x = (i - (hour % 2)) * timeInterval / 1000 + chartPaddingX;
         graphics_draw_line(ctx, GPoint(x, 0), GPoint(x, F_HEIGHT - chartPaddingY - 1));
 
@@ -298,7 +297,7 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_stroke_width(ctx, 3);
   graphics_context_set_stroke_color(ctx, GColorWhite);
   for (int i = 0; i < forecastSize; i++) {
-    int16_t x = i * timeInterval / 1000 + (timeInterval / 2000);
+    int16_t x = i * timeInterval / 1000 + 1;
     int16_t y = ((settings.weatherTemp == 'C' ? forecast[i].temp_c : forecast[i].temp_f) - params.minValue) *
                 tempIntervalK / 1000;
     x = x + chartPaddingX;
@@ -324,7 +323,6 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
 }
 
 void handle_weather(bool refresh) {
-  APP_LOG(APP_LOG_LEVEL_INFO, "handle weather");
   if (refresh && !userIsSleeping()) {
     app_timer_register(3000, js_ready_handler, NULL);
   } else {
@@ -401,6 +399,7 @@ void weather_unload() {
 void weather_init() {
   generic_weather_init();
   generic_weather_set_forecast(settings.forecast);
+  //generic_weather_set_location( (GenericWeatherCoordinates) { 6046999, 2508666 } );
   generic_weather_load(WEATHER_KEY);
   if (settings.forecast) {
     generic_weather_load_forecast(WEATHER_KEY_FORECAST);
