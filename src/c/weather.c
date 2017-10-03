@@ -43,6 +43,7 @@ typedef struct {
 static GenericWeatherForecast *forecast;
 static ForecastParams params;
 static int forecastSize = 0;
+
 static void render_weather(GenericWeatherInfo *info) {
   if (!info) {
     return;
@@ -231,7 +232,8 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
       t = settings.weatherTemp == 'C' ? t - 5 : t - 10;
     }
   }
-
+#endif
+  
   // time markers
   if (true) {
     graphics_context_set_stroke_color(ctx, GColorDarkGray);
@@ -253,8 +255,11 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
       if ((evenHours && hour % 6 == 0) || (!evenHours && hour % 6 == 1)) {
         // move H mark back 1 hour if odd hours
         int16_t x = (i - (hour % 2)) * timeInterval / 1000 + chartPaddingX;
+        
+        #if defined(PBL_COLOR)
         graphics_draw_line(ctx, GPoint(x, 0), GPoint(x, F_HEIGHT - chartPaddingY - 1));
-
+        #endif
+        
         // hour number below X
         snprintf(s_hour, sizeof(s_hour), "%02d", hour - (hour % 2));
         rect_bounds = GRect(x - 6, F_HEIGHT - 11, 12, 10);
@@ -262,36 +267,44 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
       }
     }
   }
-
+  
   // Condition colors
   for (int i = 0; i < forecastSize; i++) {
     int16_t x = i * timeInterval / 1000 + chartPaddingX + 1;
-    GColor c = GColorClear;
+    GColor c = GColorBlack;
     switch (forecast[i].condition) {
       case GenericWeatherConditionClearSky:
       case GenericWeatherConditionScatteredClouds:
       case GenericWeatherConditionFewClouds:
+      #if defined(PBL_COLOR)
         c = GColorYellow;
+      #endif
         break;
       case GenericWeatherConditionBrokenClouds:
       case GenericWeatherConditionMist:
       case GenericWeatherConditionWind:
+      #if defined(PBL_COLOR)
         c = GColorDarkGray;
+      #endif
         break;
       case GenericWeatherConditionShowerRain:
       case GenericWeatherConditionRain:
       case GenericWeatherConditionSnow:
       case GenericWeatherConditionThunderstorm:
+      #if defined(PBL_COLOR)
         c = GColorVividCerulean;
+      #else
+        c = GColorWhite;
+      #endif
         break;
       default:
-        c = GColorClear;
+        c = GColorBlack;
     }
     graphics_context_set_fill_color(ctx, c);
     GRect conditionRect = GRect(x, F_HEIGHT - chartPaddingY - 5, timeInterval / 1000 + 1, 5);
     graphics_fill_rect(ctx, conditionRect, 0, GCornerNone);
   }
-#endif
+
   // Temp line graph
   GPoint start = GPoint(-1, -1);
   graphics_context_set_stroke_width(ctx, 3);
