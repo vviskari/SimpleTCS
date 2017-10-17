@@ -11,6 +11,8 @@ static GFont font32;
 const char df1[] = "%d.%m.%Y";
 const char df2[] = "%m/%d/%Y";
 const char df3[] = "%Y-%m-%d";
+const char df4[] = "%d.%m.";
+const char df5[] = "%m.%d.";
 
 static char weekdayname[6][7][15] = {{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"},
                                      {"Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"},
@@ -48,7 +50,7 @@ void handle_time(struct tm *tick_time, TimeUnits units_changed) {
   text_layer_set_text(s_time_layer, s_time_text);
 
   // Time and date
-  static char s_date_text[] = "XXXXXXXXXXXXX, 12.12.1999";
+  static char s_date_text[] = "XXXXXXXXXXXXXXX 12.12.1999";
   strftime(weekdaynumber, sizeof(weekdaynumber), "%u", tick_time);
 
   static char dmy[] = "12.12.1999";
@@ -58,8 +60,40 @@ void handle_time(struct tm *tick_time, TimeUnits units_changed) {
     strftime(dmy, sizeof(dmy), df2, tick_time);
   } else if (settings.dateFormat == '3') {
     strftime(dmy, sizeof(dmy), df3, tick_time);
+  } else if (settings.dateFormat == '4') {
+    strftime(dmy, sizeof(dmy), df4, tick_time);
+  } else if (settings.dateFormat == '5') {
+    strftime(dmy, sizeof(dmy), df5, tick_time);
   }
-  snprintf(s_date_text, sizeof(s_date_text), "%s, %s", weekdayname[loc][atoi(weekdaynumber) - 1], dmy);
+  
+  int weekday_idx = atoi(weekdaynumber) - 1;
+  char* weekdayname_loc = weekdayname[loc][weekday_idx];
+  if (settings.translateWeekdays) {
+    if (weekday_idx == 0) {
+      weekdayname_loc = settings.monday;
+    }
+    if (weekday_idx == 1) {
+      weekdayname_loc = settings.tuesday;
+    }
+    if (weekday_idx == 2) {
+      weekdayname_loc = settings.wednesday;
+    }
+    if (weekday_idx == 3) {
+      weekdayname_loc = settings.thursday;
+    }
+    if (weekday_idx == 4) {
+      weekdayname_loc = settings.friday;
+    }
+    if (weekday_idx == 5) {
+      weekdayname_loc = settings.saturday;
+    }
+    if (weekday_idx == 6) {
+      weekdayname_loc = settings.sunday;
+    }
+  }
+  //APP_LOG(APP_LOG_LEVEL_INFO, "Weekday LOC %s", weekdayname_loc);
+  
+  snprintf(s_date_text, sizeof(s_date_text), "%s %s", weekdayname_loc, dmy);
   text_layer_set_text(s_date_layer, s_date_text);
 }
 

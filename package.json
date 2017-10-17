@@ -20,7 +20,17 @@
             "wt",
             "wf",
             "vm",
-            "df"
+            "df",
+            "translate_days",
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday",
+            "temp_grid",
+            "time_interval"
         ],
         "projectType": "native",
         "resources": {
@@ -72,7 +82,7 @@
                 {
                     "characterRegex": "[.0-9:\u02da-]",
                     "file": "fonts/OpenSans-Regular.ttf",
-                    "name": "FONT_OPEN_24",
+                    "name": "FONT_OPEN_52",
                     "targetPlatforms": null,
                     "type": "font"
                 },
@@ -86,7 +96,7 @@
                 {
                     "characterRegex": "[.0-9:\u02da-]",
                     "file": "fonts/OpenSans-Regular.ttf",
-                    "name": "FONT_OPEN_52",
+                    "name": "FONT_OPEN_24",
                     "targetPlatforms": null,
                     "type": "font"
                 }
@@ -103,5 +113,5 @@
             "watchface": true
         }
     },
-    "version": "2.18.0"
+    "version": "2.19.0"
 }

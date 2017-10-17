@@ -79,7 +79,7 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
         hide_weather(show_seconds);
         hide_seconds(!show_seconds);
         secondticks = show_seconds ? 1 : MAX_SECONDS + 1;
-      } else if (shakes == 3 && settings.forecast && settings.viewMode == 's') {
+      } else if (shakes == 3 && settings.weatherProvider=='w' && settings.viewMode == 's') {
         shakes = 0;
         // toggle forecast
         set_show_forecast(!show_forecast);
@@ -87,7 +87,7 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
 
     } else if (shakes == 2) {
       // viewMode == t, shake 2 times to switch
-      if (show_seconds && settings.forecast) {
+      if (show_seconds && settings.weatherProvider=='w') {
         // toggle forecast if showing seconds right now
         set_show_forecast(!show_forecast);
       }

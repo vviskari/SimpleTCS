@@ -9,6 +9,16 @@ typedef struct {
   bool forecast;
   char viewMode;
   char dateFormat;
+  bool translateWeekdays;
+  char monday[20];
+  char tuesday[20];
+  char wednesday[20];
+  char thursday[20];
+  char friday[20];
+  char saturday[20];
+  char sunday[20];
+  bool tempGrid;
+  char forecastTimeInterval;
 } Settings;
 
 extern Settings settings;
