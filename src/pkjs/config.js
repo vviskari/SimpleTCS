@@ -239,22 +239,18 @@ module.exports = [
       {
         "type": "text",
         "id": "idForecastDescription",
-        "defaultValue": "Enable to render the time and temp grid in weather forecast chart. Works only with Weather Underground provider.",
+        "defaultValue": "Enable to render the time and temperature grid in weather forecast chart.",
       },
       {
         "type": "radiogroup",
         "messageKey": "time_interval",
         "id": "idTimeInterval",
         "defaultValue": "1",
-        "label": "Forecast time interval:",
+        "label": "Forecast time markers:",
         "options": [
           {
             "label": "6h",
             "value": "1"
-          },
-          {
-            "label": "12h",
-            "value": "2"
           },
           {
             "label": "12h am/pm",

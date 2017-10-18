@@ -232,15 +232,15 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
       int16_t y = (params.maxValue - t) * tempIntervalK / 1000;
       //APP_LOG(APP_LOG_LEVEL_INFO, "TEMP line %d %d", t, y);
       graphics_draw_line(ctx, GPoint(chartPaddingX + 1, y), GPoint(F_WIDTH, y));
-      
+
       int16_t drop = settings.weatherTemp == 'C' ? 5 : 10;
-#if defined(PBL_BW)
+      #if defined(PBL_BW)
       // avoid too many lines on BW
       int16_t minmax = params.maxValue - params.minValue;
       if (minmax/drop > 3) {
         drop = drop * 2;
       }
-#endif
+      #endif
       t = t - drop;
     }
   }
@@ -255,34 +255,38 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
   rect_bounds = GRect(-2, -4, 17, 10);
   bool evenHours = false;
 
-  // skip first forecast so its not too close to Y axis
   for (int i = 1; i < forecastSize; i++) {
     time_t time = forecast[i].timestamp;
+    // marker string
     char s_hour[5];
     strftime(s_hour, 3, "%H", localtime(&time));
+    // hour number
     int hour = atoi(s_hour);
     if (i == 1) {
       // with WU we have one point every 2 hours. check if they are even or odd
       evenHours = hour % 2 == 0;
     }
 
-    int16_t settingsInterval = 6;
-    if (settings.forecastTimeInterval != '1') {
-      settingsInterval = 12;
+    // time lines every 6h (or 12h)
+    bool renderline = (evenHours && hour % 6 == 0) || (!evenHours && hour % 6 == 1);
+    bool rendermarker = renderline;
+    if (settings.forecastTimeInterval == '3') {
+      rendermarker = (evenHours && hour % 12 == 0) || (!evenHours && hour % 12 == 1);
     }
-    if ((evenHours && hour % settingsInterval == 0) || (!evenHours && hour % settingsInterval == 1)) {
-      // move H mark back 1 hour if odd hours
-      int16_t x = (i - (hour % 2)) * timeInterval / 1000 + chartPaddingX;
-    
-      if (settings.tempGrid) {
-        graphics_draw_line(ctx, GPoint(x, 0), GPoint(x, F_HEIGHT - chartPaddingY - 1));
-      }
 
-      // hour number below X
-      // %I%p
+    // x-position, move x back 1 hour if odd hours
+    int16_t x = (i - (hour % 2)) * timeInterval / 1000 + chartPaddingX;
+
+    // draw vertical line
+    if (settings.tempGrid && renderline) {
+      graphics_draw_line(ctx, GPoint(x, 0), GPoint(x, F_HEIGHT - chartPaddingY - 1));
+    }
+
+    // hour number below X
+    if (rendermarker) {
       if (settings.forecastTimeInterval == '3') {
-        int16_t h = hour;
-        if (h == 0) {
+        // 12h AM/PM marker
+        if (hour == 0 || hour == 1) {
           strcpy(s_hour, "12AM");
         } else {
           strcpy(s_hour, "12PM");

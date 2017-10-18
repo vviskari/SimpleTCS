@@ -143,6 +143,9 @@ void load_settings() {
   if (persist_exists(SETTINGS_KEY)) {
     persist_read_data(SETTINGS_KEY, &settings, sizeof(settings));
   }
+  if (settings.forecastTimeInterval == '2') {
+    settings.forecastTimeInterval = '3';
+  }
 }
 
 void settings_init() {
