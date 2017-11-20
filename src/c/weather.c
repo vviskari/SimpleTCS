@@ -253,7 +253,6 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
   #endif
   GFont font = fonts_get_system_font(FONT_KEY_GOTHIC_09);
   rect_bounds = GRect(-2, -4, 17, 10);
-  bool evenHours = false;
 
   for (int i = 1; i < forecastSize; i++) {
     time_t time = forecast[i].timestamp;
@@ -262,10 +261,8 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
     strftime(s_hour, 3, "%H", localtime(&time));
     // hour number
     int hour = atoi(s_hour);
-    if (i == 1) {
       // with WU we have one point every 2 hours. check if they are even or odd
-      evenHours = hour % 2 == 0;
-    }
+    bool evenHours = hour % 2 == 0;
 
     // time lines every 6h (or 12h)
     bool renderline = (evenHours && hour % 6 == 0) || (!evenHours && hour % 6 == 1);
