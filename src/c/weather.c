@@ -7,30 +7,30 @@
 #include "utils.h"
 #include "weather.h"
 
+#define WEATHER_CLEAR 'B'
+#define WEATHER_CLEAR_NIGHT 'C'
+#define WEATHER_PART_CLOUD 'H'
+#define WEATHER_PART_CLOUD_NIGHT 'I'
+#define WEATHER_FOG 'M'
+#define WEATHER_CLOUD 'N'
+#define WEATHER_STORM 'P'
+#define WEATHER_LIGHT_RAIN 'Q'
+#define WEATHER_RAIN 'R'
+#define WEATHER_SNOW 'W'
+#define WEATHER_WIND 'F'
+#define WEATHER_UNKNOWN ')'
+
+#define F_HEIGHT 48
+#define F_WIDTH 140
+
 static TextLayer *s_weather_text_layer;
 static TextLayer *s_weather_icon_layer;
 static TextLayer *s_weather_unit_layer;
 static TextLayer *s_weather_loc_layer;
 static Layer *s_weather_forecast_layer;
-
-static const char WEATHER_CLEAR = 'B';
-static const char WEATHER_CLEAR_NIGHT = 'C';
-static const char WEATHER_PART_CLOUD = 'H';
-static const char WEATHER_PART_CLOUD_NIGHT = 'I';
-static const char WEATHER_FOG = 'M';
-static const char WEATHER_CLOUD = 'N';
-static const char WEATHER_STORM = 'P';
-static const char WEATHER_LIGHT_RAIN = 'Q';
-static const char WEATHER_RAIN = 'R';
-static const char WEATHER_SNOW = 'W';
-static const char WEATHER_WIND = 'F';
-static const char WEATHER_UNKNOWN = ')';
-
 static GFont weatherFont;
 static GFont font24;
 
-#define F_HEIGHT 48
-#define F_WIDTH 140
 typedef struct {
   int16_t maxTemp;
   int16_t minTemp;

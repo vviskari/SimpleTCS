@@ -3,6 +3,9 @@
 #include "global.h"
 #include "settings.h"
 
+#define BATT_LOW 30
+#define BATT_CRITICAL 10
+
 static TextLayer *s_battery_layer;
 static TextLayer *s_box;
 static TextLayer *s_bat_cal_bg_layer[3];
@@ -169,15 +172,15 @@ static void render_battery(BatteryChargeState charge_state) {
     snprintf(battery_text, sizeof(battery_text), "%d%%+", charge_state.charge_percent);
   } else {
     snprintf(battery_text, sizeof(battery_text), "%d%%", charge_state.charge_percent);
-    text_layer_set_text_color(s_battery_layer, GColorRed);
-    text_layer_set_background_color(s_box, GColorRed);
-    if (charge_state.charge_percent > 20) {
+    text_layer_set_text_color(s_battery_layer, GColorGreen);
+    text_layer_set_background_color(s_box, GColorGreen);
+    if (charge_state.charge_percent <= BATT_LOW) {
       text_layer_set_text_color(s_battery_layer, GColorYellow);
       text_layer_set_background_color(s_box, GColorYellow);
     }
-    if (charge_state.charge_percent > 40) {
-      text_layer_set_text_color(s_battery_layer, GColorGreen);
-      text_layer_set_background_color(s_box, GColorGreen);
+    if (charge_state.charge_percent <= BATT_CRITICAL) {
+      text_layer_set_text_color(s_battery_layer, GColorRed);
+      text_layer_set_background_color(s_box, GColorRed);
     }
   }
 #if defined(PBL_BW)
