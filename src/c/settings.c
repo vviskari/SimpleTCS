@@ -122,6 +122,16 @@ static void conf_inbox_received_handler(DictionaryIterator *iter, void *context)
     settings.forecastTimeInterval = conf->value->cstring[0];
   }
 
+  conf = dict_find(iter, MESSAGE_KEY_sticky_location);
+  if (conf) {
+    char old = settings.stickyLocation;
+    settings.stickyLocation = conf->value->int8 == 1 ? true : false;
+    if ( old != settings.stickyLocation) {
+      // sticky removed, update
+      updateWeather = true;
+    }
+  }
+
   save_settings();
   
   time_t now = time(NULL);
@@ -139,6 +149,7 @@ void load_settings() {
   settings.translateWeekdays = false;
   settings.tempGrid = true;
   settings.forecastTimeInterval = '1';
+  settings.stickyLocation = false;
 
   if (persist_exists(SETTINGS_KEY)) {
     persist_read_data(SETTINGS_KEY, &settings, sizeof(settings));

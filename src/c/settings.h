@@ -19,6 +19,7 @@ typedef struct {
   char sunday[20];
   bool tempGrid;
   char forecastTimeInterval;
+  bool stickyLocation;
 } Settings;
 
 extern Settings settings;

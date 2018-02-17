@@ -46,6 +46,7 @@ static int forecastSize = 0;
 
 static void render_weather(GenericWeatherInfo *info) {
   if (!info) {
+    APP_LOG(APP_LOG_LEVEL_INFO, "render_weather no info");
     return;
   }
 
@@ -112,6 +113,7 @@ static void render_weather(GenericWeatherInfo *info) {
 
 static void weather_callback(GenericWeatherInfo *info, GenericWeatherForecast *_forecast, int _forecastSize,
                              GenericWeatherStatus status) {
+
   if (status != GenericWeatherStatusAvailable) {
     // load old state
     generic_weather_load(WEATHER_KEY);
@@ -138,7 +140,6 @@ static void weather_callback(GenericWeatherInfo *info, GenericWeatherForecast *_
 
   GenericWeatherPeekData peek = generic_weather_peek();
   if (!peek.forecast || peek.forecastSize == 0) {
-    APP_LOG(APP_LOG_LEVEL_INFO, "no weather forecast received after peek");
     return;
   }
   forecast = peek.forecast;
@@ -174,6 +175,17 @@ static void weather_callback(GenericWeatherInfo *info, GenericWeatherForecast *_
 }
 
 static void js_ready_handler(void *context) {
+  generic_weather_set_location(GENERIC_WEATHER_GPS_LOCATION);
+
+  GenericWeatherPeekData peek = generic_weather_peek();
+  if (!!peek.info && settings.stickyLocation) {
+    if (peek.info->latitude != (int32_t)0xFFFFFFFF && peek.info->longitude != (int32_t)0xFFFFFFFF &&
+        peek.info->latitude != 0 && peek.info->longitude != 0) {
+      generic_weather_set_location( (GenericWeatherCoordinates) { peek.info->latitude, peek.info->longitude } );
+    }
+  }
+  generic_weather_set_forecast(false);
+
   switch (settings.weatherProvider) {
     case 'y':
     generic_weather_set_provider(GenericWeatherProviderYahooWeather);
@@ -185,6 +197,7 @@ static void js_ready_handler(void *context) {
     case 'w':
     generic_weather_set_provider(GenericWeatherProviderWeatherUnderground);
     generic_weather_set_api_key(settings.weatherApiKey);
+    generic_weather_set_forecast(true);
     break;
     case 'f':
     generic_weather_set_provider(GenericWeatherProviderForecastIo);
@@ -193,7 +206,6 @@ static void js_ready_handler(void *context) {
     default:
     generic_weather_set_provider(GenericWeatherProviderUnknown);
   }
-  generic_weather_set_forecast(true);
   generic_weather_fetch(weather_callback);
 }
 
@@ -261,7 +273,7 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
     strftime(s_hour, 3, "%H", localtime(&time));
     // hour number
     int hour = atoi(s_hour);
-      // with WU we have one point every 2 hours. check if they are even or odd
+    // with WU we have one point every 2 hours. check if they are even or odd
     bool evenHours = hour % 2 == 0;
 
     // time lines every 6h (or 12h)
@@ -377,6 +389,7 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
 }
 
 void handle_weather(bool refresh) {
+
   if (refresh && !userIsSleeping()) {
     app_timer_register(3000, js_ready_handler, NULL);
   } else {

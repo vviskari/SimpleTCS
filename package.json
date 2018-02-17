@@ -2,7 +2,7 @@
     "author": "ville.viskari@gmail.com",
     "dependencies": {
         "pebble-clay": "^1.0.4",
-        "pebble-generic-weather": "https://builds.cloudpebble.net/d3cdd12b-6721-4842-a244-64c617a2f6e6/package.tar.gz"
+        "pebble-generic-weather": "https://builds.cloudpebble.net/0ab53f46-3547-4c14-b7a6-b9990b13b623/package.tar.gz"
     },
     "keywords": [],
     "name": "simple-tcs",
@@ -30,7 +30,8 @@
             "saturday",
             "sunday",
             "temp_grid",
-            "time_interval"
+            "time_interval",
+            "sticky_location"
         ],
         "projectType": "native",
         "resources": {
@@ -113,5 +114,5 @@
             "watchface": true
         }
     },
-    "version": "2.22.0"
+    "version": "2.23.0"
 }

@@ -189,6 +189,18 @@ module.exports = [
         ]
       },
       {
+        "type": "toggle",
+        "id": "idStickyLocation",
+        "messageKey": "sticky_location",
+        "defaultValue": false,
+        "label": "Location locked:"
+      },
+      {
+        "type": "text",
+        "id": "idStickyDescription",
+        "defaultValue": "Lock the weather location if you want to disable the location services on your phone. The services need to be enabled only once to get the initial GPS coordinates. Enable this setting only after you are happy with the current location.",
+      },
+      {
         "type": "radiogroup",
         "messageKey": "wp",
         "id": "idWeatherProvider",
