@@ -20,14 +20,10 @@
 #define WEATHER_WIND 'F'
 #define WEATHER_UNKNOWN ')'
 
-#define F_HEIGHT 48
-#define F_WIDTH 140
-
 static TextLayer *s_weather_text_layer;
 static TextLayer *s_weather_icon_layer;
 static TextLayer *s_weather_unit_layer;
 static TextLayer *s_weather_loc_layer;
-static Layer *s_weather_forecast_layer;
 static GFont weatherFont;
 static GFont font24;
 
@@ -408,10 +404,6 @@ void hide_weather(bool hide) {
   layer_set_hidden((Layer *)s_weather_unit_layer, hide);
 }
 
-void hide_forecast(bool hide) {
-  layer_set_hidden(s_weather_forecast_layer, hide);
-}
-
 void weather_load() {
   Layer *window_layer = window_get_root_layer(s_main_window);
 
@@ -445,10 +437,7 @@ void weather_load() {
   text_layer_set_text_alignment(s_weather_loc_layer, GTextAlignmentCenter);
   layer_add_child(window_layer, text_layer_get_layer(s_weather_loc_layer));
 
-  s_weather_forecast_layer = layer_create(GRect(2, 120, F_WIDTH, F_HEIGHT));
-  layer_set_update_proc(s_weather_forecast_layer, forecast_update_proc);
-  hide_forecast(true);
-  layer_add_child(window_layer, s_weather_forecast_layer);
+  layer_set_update_proc(s_forecast_container, forecast_update_proc);
 
   handle_weather(false);
 }
@@ -458,7 +447,6 @@ void weather_unload() {
   text_layer_destroy(s_weather_text_layer);
   text_layer_destroy(s_weather_unit_layer);
   text_layer_destroy(s_weather_loc_layer);
-  layer_destroy(s_weather_forecast_layer);
   fonts_unload_custom_font(weatherFont);
   fonts_unload_custom_font(font24);
 }

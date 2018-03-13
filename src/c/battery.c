@@ -91,7 +91,7 @@ static void estimate_battery(BatteryChargeState charge_state) {
   int weekStart =
       now - (atoi(weekdaynumber) - offset) * 60 * 60 * 24 - stm->tm_hour * 60 * 60 - stm->tm_min * 60 - stm->tm_sec;
 
-  Layer *window_layer = window_get_root_layer(s_main_window);
+  //Layer *window_layer = window_get_root_layer(s_main_window);
   bool is_bat_cal_hidden = layer_get_hidden((Layer *)s_bat_cal_bat_layer[1]);
   text_layer_destroy(s_bat_cal_bat_layer[0]);
   text_layer_destroy(s_bat_cal_bat_layer[1]);
@@ -106,16 +106,16 @@ static void estimate_battery(BatteryChargeState charge_state) {
     }
     int width = 140 - start;
     // APP_LOG(APP_LOG_LEVEL_INFO, "Last week %d, %d", start, width);
-    s_bat_cal_bat_layer[0] = text_layer_create(GRect(2 + start, 134, width, 2));
+    s_bat_cal_bat_layer[0] = text_layer_create(GRect(2 + start, 19, width, 2));
     text_layer_set_background_color(s_bat_cal_bat_layer[0], GColorSpringBud);
     layer_set_hidden((Layer *)s_bat_cal_bat_layer[0], is_bat_cal_hidden);
-    layer_add_child(window_layer, text_layer_get_layer(s_bat_cal_bat_layer[0]));
+    layer_add_child(s_calendar_container, text_layer_get_layer(s_bat_cal_bat_layer[0]));
   } else {
     // no history last week
-    s_bat_cal_bat_layer[0] = text_layer_create(GRect(2, 134, 140, 2));
+    s_bat_cal_bat_layer[0] = text_layer_create(GRect(2, 19, 140, 2));
     text_layer_set_background_color(s_bat_cal_bat_layer[0], GColorBlack);
     layer_set_hidden((Layer *)s_bat_cal_bat_layer[0], is_bat_cal_hidden);
-    layer_add_child(window_layer, text_layer_get_layer(s_bat_cal_bat_layer[0]));
+    layer_add_child(s_calendar_container, text_layer_get_layer(s_bat_cal_bat_layer[0]));
   }
 
   // this week
@@ -131,10 +131,10 @@ static void estimate_battery(BatteryChargeState charge_state) {
       width = (estimatedBatteryLife - weekStart) * 140 / weekSeconds - start;
     }
     // APP_LOG(APP_LOG_LEVEL_INFO, "This week %d, %d", start, width);
-    s_bat_cal_bat_layer[1] = text_layer_create(GRect(2 + start, 134 + 15, width, 2));
+    s_bat_cal_bat_layer[1] = text_layer_create(GRect(2 + start, 19 + 15, width, 2));
     text_layer_set_background_color(s_bat_cal_bat_layer[1], GColorSpringBud);
     layer_set_hidden((Layer *)s_bat_cal_bat_layer[1], is_bat_cal_hidden);
-    layer_add_child(window_layer, text_layer_get_layer(s_bat_cal_bat_layer[1]));
+    layer_add_child(s_calendar_container, text_layer_get_layer(s_bat_cal_bat_layer[1]));
   }
 
   // next week
@@ -146,16 +146,16 @@ static void estimate_battery(BatteryChargeState charge_state) {
     }
     // APP_LOG(APP_LOG_LEVEL_INFO, "Next week %d", width);
 
-    s_bat_cal_bat_layer[2] = text_layer_create(GRect(2, 134 + 30, width, 2));
+    s_bat_cal_bat_layer[2] = text_layer_create(GRect(2, 19 + 30, width, 2));
     text_layer_set_background_color(s_bat_cal_bat_layer[2], GColorSpringBud);
     layer_set_hidden((Layer *)s_bat_cal_bat_layer[2], is_bat_cal_hidden);
-    layer_add_child(window_layer, text_layer_get_layer(s_bat_cal_bat_layer[2]));
+    layer_add_child(s_calendar_container, text_layer_get_layer(s_bat_cal_bat_layer[2]));
   } else {
     // black next week
-    s_bat_cal_bat_layer[2] = text_layer_create(GRect(2, 134 + 30, 140, 2));
+    s_bat_cal_bat_layer[2] = text_layer_create(GRect(2, 19 + 30, 140, 2));
     text_layer_set_background_color(s_bat_cal_bat_layer[2], GColorBlack);
     layer_set_hidden((Layer *)s_bat_cal_bat_layer[2], is_bat_cal_hidden);
-    layer_add_child(window_layer, text_layer_get_layer(s_bat_cal_bat_layer[2]));
+    layer_add_child(s_calendar_container, text_layer_get_layer(s_bat_cal_bat_layer[2]));
   }
 }
 
@@ -193,13 +193,6 @@ static void render_battery(BatteryChargeState charge_state) {
 
 void handle_battery() { render_battery(battery_state_service_peek()); }
 
-void hide_battery_estimate(bool hide) {
-  for (int week = 2; week >= 0; week--) {
-    layer_set_hidden((Layer *)s_bat_cal_bg_layer[week], hide);
-    layer_set_hidden((Layer *)s_bat_cal_bat_layer[week], hide);
-  }
-}
-
 void battery_load() {
   Layer *window_layer = window_get_root_layer(s_main_window);
 
@@ -221,13 +214,13 @@ void battery_load() {
 
   for (int week = 2; week >= 0; week--) {
     // Battery estimation bar
-    s_bat_cal_bg_layer[week] = text_layer_create(GRect(2, 134 + week * 15, 140, 2));
+    s_bat_cal_bg_layer[week] = text_layer_create(GRect(2, 19 + week * 15, 140, 2));
     text_layer_set_background_color(s_bat_cal_bg_layer[week], GColorBlack);
-    layer_add_child(window_layer, text_layer_get_layer(s_bat_cal_bg_layer[week]));
+    layer_add_child(s_calendar_container, text_layer_get_layer(s_bat_cal_bg_layer[week]));
 
-    s_bat_cal_bat_layer[week] = text_layer_create(GRect(2, 134 + week * 15, 140, 2));
+    s_bat_cal_bat_layer[week] = text_layer_create(GRect(2, 19 + week * 15, 140, 2));
     text_layer_set_background_color(s_bat_cal_bat_layer[week], GColorBlack);
-    layer_add_child(window_layer, text_layer_get_layer(s_bat_cal_bat_layer[week]));
+    layer_add_child(s_calendar_container, text_layer_get_layer(s_bat_cal_bat_layer[week]));
   }
 
   battery_state_service_subscribe(render_battery);

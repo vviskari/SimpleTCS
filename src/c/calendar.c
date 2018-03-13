@@ -81,25 +81,16 @@ void drawcal() {
   }
 }
 
-void hide_calendar(bool hide) {
-  for (int week = 2; week >= 0; week--) {
-    for (int day = 0; day < 7; day++) {
-      layer_set_hidden((Layer *)s_cal_array_layer[week][day], hide);
-    }
-  }
-}
-
 void calendar_load() {
-  Layer *window_layer = window_get_root_layer(s_main_window);
   for (int week = 2; week >= 0; week--) {
     for (int day = 0; day < 7; day++) {
-      s_cal_array_layer[week][day] = text_layer_create(GRect(2 + day * 20, 115 + week * 15, 20, 21));
+      s_cal_array_layer[week][day] = text_layer_create(GRect(2 + day * 20, week * 15, 20, 21));
       text_layer_set_text_color(s_cal_array_layer[week][day], GColorWhite);
       text_layer_set_background_color(s_cal_array_layer[week][day], GColorClear);
       text_layer_set_font(s_cal_array_layer[week][day], fonts_get_system_font(FONT_KEY_GOTHIC_18));
       text_layer_set_text_alignment(s_cal_array_layer[week][day], GTextAlignmentCenter);
       text_layer_set_text(s_cal_array_layer[week][day], "00");
-      layer_add_child(window_layer, text_layer_get_layer(s_cal_array_layer[week][day]));
+      layer_add_child(s_calendar_container, text_layer_get_layer(s_cal_array_layer[week][day]));
     }
   }
   drawcal();
