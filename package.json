@@ -8,6 +8,7 @@
     "name": "simple-tcs",
     "pebble": {
         "capabilities": [
+            "location",
             "configurable",
             "health"
         ],
@@ -114,5 +115,5 @@
             "watchface": true
         }
     },
-    "version": "2.24.0"
+    "version": "2.25.0"
 }

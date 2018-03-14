@@ -144,7 +144,7 @@ void load_settings() {
   settings.weekStartDay = 'm';
   settings.weatherTemp = 'C';
   settings.weatherProvider = 'y';
-  settings.viewMode = 's';    // s=shake 3 times, t=twice, c=calendar, f=forecast, a=animate
+  settings.viewMode = 'a';    // s=shake 3 times, t=twice, c=calendar, f=forecast, a=animate
   settings.dateFormat = '1';  // 1, 2, 3
   settings.translateWeekdays = false;
   settings.tempGrid = true;

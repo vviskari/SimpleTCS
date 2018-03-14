@@ -54,16 +54,13 @@ void toggle_animation() {
   } else {
     finish.origin.x = 0;
   }
-  // Animate the Layer
+
   PropertyAnimation *prop_anim = property_animation_create_layer_frame(s_animate_container, 
                                                                        &start, &finish);
-  // Get the Animation
   Animation *anim = property_animation_get_animation(prop_anim);
-  // Choose parameters
   const int delay_ms = 0;
   const int duration_ms = 1500;
 
-  // Configure the Animation's curve, delay, and duration
   animation_set_curve(anim, AnimationCurveEaseOut);
   animation_set_delay(anim, delay_ms);
   animation_set_duration(anim, duration_ms);
@@ -90,11 +87,11 @@ static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
     time_t now = time(NULL);
     tick_time = localtime(&now);
     from_init = true;
-  }  
+  }
   handle_time(tick_time, units_changed);
   if (tick_time->tm_sec == 0) {
-    // animate calendar-forecast if viewMode=a 
-    if (settings.viewMode == 'a' && !from_init) {
+    // animate calendar-forecast if viewMode=a
+    if (settings.viewMode == 'a' && !from_init && !userIsSleeping()) {
       toggle_animation();
     }
 
