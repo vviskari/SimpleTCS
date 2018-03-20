@@ -54,12 +54,16 @@ void toggle_animation() {
   } else {
     finish.origin.x = 0;
   }
-
+  if (!settings.animationEnabled) {
+    layer_set_frame(s_animate_container, finish);
+    return;
+  }
+  
   PropertyAnimation *prop_anim = property_animation_create_layer_frame(s_animate_container, 
                                                                        &start, &finish);
   Animation *anim = property_animation_get_animation(prop_anim);
   const int delay_ms = 0;
-  const int duration_ms = 1500;
+  const int duration_ms = 1000;
 
   animation_set_curve(anim, AnimationCurveEaseOut);
   animation_set_delay(anim, delay_ms);

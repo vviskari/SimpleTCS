@@ -163,9 +163,16 @@ module.exports = [
         ]
       },
       {
+        "type": "toggle",
+        "id": "idAnimation",
+        "messageKey": "animation_enabled",
+        "defaultValue": true,
+        "label": "Animated change:"
+      },
+      {
         "type": "text",
         "id": "idBehaviourDescription",
-        "defaultValue": "Select the watchface behaviour: change every minute (animate), always display calendar or weather forecast, or switch between them with 3 shakes. Selecting '2 shakes' will first switch to seconds and then another 2 will change mode.",
+        "defaultValue": "Select the watchface behaviour: change every minute, always display calendar or weather forecast, or switch between them with 3 shakes. Selecting '2 shakes' will first switch to seconds and then another 2 will change mode.",
       }
     ]
   },

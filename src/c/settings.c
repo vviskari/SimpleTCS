@@ -132,6 +132,11 @@ static void conf_inbox_received_handler(DictionaryIterator *iter, void *context)
     }
   }
 
+  conf = dict_find(iter, MESSAGE_KEY_animation_enabled);
+  if (conf) {
+    settings.animationEnabled = conf->value->int8 == 1 ? true : false;
+  }
+
   save_settings();
   
   time_t now = time(NULL);
@@ -150,6 +155,7 @@ void load_settings() {
   settings.tempGrid = true;
   settings.forecastTimeInterval = '1';
   settings.stickyLocation = false;
+  settings.animationEnabled = true;
 
   if (persist_exists(SETTINGS_KEY)) {
     persist_read_data(SETTINGS_KEY, &settings, sizeof(settings));

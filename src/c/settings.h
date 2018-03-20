@@ -20,6 +20,7 @@ typedef struct {
   bool tempGrid;
   char forecastTimeInterval;
   bool stickyLocation;
+  bool animationEnabled;
 } Settings;
 
 extern Settings settings;

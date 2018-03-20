@@ -32,7 +32,8 @@
             "sunday",
             "temp_grid",
             "time_interval",
-            "sticky_location"
+            "sticky_location",
+            "animation_enabled"
         ],
         "projectType": "native",
         "resources": {
@@ -115,5 +116,5 @@
             "watchface": true
         }
     },
-    "version": "2.25.0"
+    "version": "2.26.0"
 }
