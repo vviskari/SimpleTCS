@@ -45,8 +45,8 @@ static void estimate_battery(BatteryChargeState charge_state) {
     // APP_LOG(APP_LOG_LEVEL_INFO, "Loaded history, charge=%d, slope=%d",
     // history.charge, history.slope);
   }
-
-  if (lastCharging && !charge_state.is_plugged) {
+  
+  if (lastCharging) {
     // APP_LOG(APP_LOG_LEVEL_INFO, "Charger disconnected. Store state to
     // history");
     history.timestamp = now;
@@ -61,9 +61,8 @@ static void estimate_battery(BatteryChargeState charge_state) {
   int historyTimeHours = history.timestamp / 60 / 60;
   int historyChargePercent = history.charge * 1000;
 
-  if (history.last_estimated != charge_state.charge_percent && charge_state.charge_percent < 90) {
-    // new estimation
-    // skip battery levels 100 and 90, they are not reliable
+  if (history.last_estimated != charge_state.charge_percent && !lastCharging) {
+    // new estimation when battery level changed and was not disconnected
     int currentTimeHours = (int)now / 60 / 60;
     int currentChargePercent = charge_state.charge_percent * 1000;
 
