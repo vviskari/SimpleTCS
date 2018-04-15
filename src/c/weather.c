@@ -390,7 +390,8 @@ void handle_weather(bool refresh) {
     app_timer_register(3000, js_ready_handler, NULL);
   } else {
     GenericWeatherPeekData peek = generic_weather_peek();
-    if (!peek.info) {
+    if (!peek.info || !peek.info->timestamp) {
+      APP_LOG(APP_LOG_LEVEL_INFO, "handle, no peek");
       app_timer_register(3000, js_ready_handler, NULL);
     } else {
       weather_callback(peek.info, peek.forecast, peek.forecastSize, GenericWeatherStatusAvailable);

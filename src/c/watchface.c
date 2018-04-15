@@ -191,7 +191,6 @@ static void load_window_state() {
 }
 
 static void save_window_state() { 
-  persist_delete(FORECAST_TOGGLE_KEY);
   persist_write_bool(FORECAST_TOGGLE_KEY, show_forecast);
 }
 

@@ -13,7 +13,6 @@ Settings settings;
 static EventHandle handle;
 
 static void save_settings() {
-  persist_delete(SETTINGS_KEY);
   persist_write_data(SETTINGS_KEY, &settings, sizeof(settings));
 }
 
