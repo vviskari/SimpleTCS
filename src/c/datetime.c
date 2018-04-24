@@ -5,6 +5,7 @@
 
 static TextLayer *s_date_layer;
 static TextLayer *s_time_layer;
+static TextLayer *s_time_layer_shadow;
 static TextLayer *s_seconds_layer;
 static GFont font52;
 static GFont font32;
@@ -48,6 +49,9 @@ void handle_time(struct tm *tick_time, TimeUnits units_changed) {
     strftime(s_time_text, sizeof(s_time_text), "%I:%M", tick_time);
   }
   text_layer_set_text(s_time_layer, s_time_text);
+  #if defined(PBL_COLOR)
+  text_layer_set_text(s_time_layer_shadow, s_time_text);
+  #endif
 
   // Time and date
   static char s_date_text[] = "XXXXXXXXXXXXXXX 12.12.1999";
@@ -114,6 +118,13 @@ void datetime_load() {
   font52 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_52));
   font32 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OPEN_32));
 
+  s_time_layer_shadow = text_layer_create(GRect(2, 30, 144, 55));
+  text_layer_set_text_color(s_time_layer_shadow, GColorClear);  
+  text_layer_set_background_color(s_time_layer_shadow, GColorClear);
+  text_layer_set_font(s_time_layer_shadow, font52);
+  text_layer_set_text_alignment(s_time_layer_shadow, GTextAlignmentCenter);
+  layer_add_child(window_layer, text_layer_get_layer(s_time_layer_shadow));
+
   s_time_layer = text_layer_create(GRect(0, 28, 144, 55));
   text_layer_set_text_color(s_time_layer, GColorWhite);
   text_layer_set_background_color(s_time_layer, GColorClear);
@@ -144,7 +155,20 @@ void datetime_load() {
 void datetime_unload() {
   text_layer_destroy(s_date_layer);
   text_layer_destroy(s_time_layer);
+  text_layer_destroy(s_time_layer_shadow);
   text_layer_destroy(s_seconds_layer);
   fonts_unload_custom_font(font52);
   fonts_unload_custom_font(font32);
+}
+
+void set_time_shadow(int shadow) {
+#if defined(PBL_COLOR)
+  text_layer_set_text_color(s_time_layer_shadow, GColorLightGray);
+
+  if (shadow == SHADOW_CLEAR) {
+    text_layer_set_text_color(s_time_layer_shadow, GColorChromeYellow);    
+  } else if (shadow == SHADOW_RAIN) {
+    text_layer_set_text_color(s_time_layer_shadow, GColorVividCerulean);
+  }
+#endif
 }

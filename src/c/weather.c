@@ -6,6 +6,7 @@
 #include "settings.h"
 #include "utils.h"
 #include "weather.h"
+#include "datetime.h"
 
 #define WEATHER_CLEAR 'B'
 #define WEATHER_CLEAR_NIGHT 'C'
@@ -65,42 +66,56 @@ static void render_weather(GenericWeatherInfo *info) {
 
   switch (info->condition) {
     case GenericWeatherConditionClearSky:
-    condition = info->day ? WEATHER_CLEAR : WEATHER_CLEAR_NIGHT;
-    weatherColor = GColorYellow;
-    break;
+      condition = info->day ? WEATHER_CLEAR : WEATHER_CLEAR_NIGHT;
+      weatherColor = GColorYellow;
+      set_time_shadow(SHADOW_CLEAR);
+      break;
     case GenericWeatherConditionScatteredClouds:
     case GenericWeatherConditionFewClouds:
-    condition = info->day ? WEATHER_PART_CLOUD : WEATHER_PART_CLOUD_NIGHT;
-    weatherColor = GColorYellow;
-    break;
+      condition = info->day ? WEATHER_PART_CLOUD : WEATHER_PART_CLOUD_NIGHT;
+      weatherColor = GColorYellow;
+      set_time_shadow(SHADOW_CLEAR);
+      break;
     case GenericWeatherConditionBrokenClouds:
-    condition = WEATHER_CLOUD;
-    weatherColor = GColorLightGray;
-    break;
-    case GenericWeatherConditionRain:
-    condition = WEATHER_RAIN;
-    weatherColor = GColorLightGray;
-    break;
-    case GenericWeatherConditionShowerRain:
-    condition = WEATHER_LIGHT_RAIN;
-    break;
-    case GenericWeatherConditionThunderstorm:
-    condition = WEATHER_STORM;
-    break;
-    case GenericWeatherConditionSnow:
-    condition = WEATHER_SNOW;
-    weatherColor = GColorCyan;
-    break;
+      condition = WEATHER_CLOUD;
+      weatherColor = GColorLightGray;
+      set_time_shadow(SHADOW_CLOUD);
+      break;
     case GenericWeatherConditionMist:
-    condition = WEATHER_FOG;
-    break;
+      condition = WEATHER_FOG;
+      weatherColor = GColorLightGray;
+      set_time_shadow(SHADOW_CLOUD);
+      break;
     case GenericWeatherConditionWind:
-    condition = WEATHER_WIND;
-    break;
+      condition = WEATHER_WIND;
+      weatherColor = GColorLightGray;
+      set_time_shadow(SHADOW_CLOUD);
+      break;
+    case GenericWeatherConditionRain:
+      condition = WEATHER_RAIN;
+      weatherColor = GColorVividCerulean;
+      set_time_shadow(SHADOW_RAIN);
+      break;
+    case GenericWeatherConditionShowerRain:
+      condition = WEATHER_LIGHT_RAIN;
+      weatherColor = GColorVividCerulean;
+      set_time_shadow(SHADOW_RAIN);
+      break;
+    case GenericWeatherConditionThunderstorm:
+      condition = WEATHER_STORM;
+      weatherColor = GColorVividCerulean;
+      set_time_shadow(SHADOW_RAIN);
+      break;
+    case GenericWeatherConditionSnow:
+      condition = WEATHER_SNOW;
+      weatherColor = GColorVividCerulean;
+      set_time_shadow(SHADOW_RAIN);
+      break;
     default:
-    condition = WEATHER_UNKNOWN;
+      condition = WEATHER_UNKNOWN;
+      set_time_shadow(SHADOW_CLOUD);
   }
-
+  
   static char s_condition_text[2];
   snprintf(s_condition_text, sizeof(s_condition_text), "%c", condition);
   text_layer_set_text(s_weather_icon_layer, s_condition_text);
