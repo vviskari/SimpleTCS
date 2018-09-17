@@ -46,8 +46,7 @@ static void estimate_battery(BatteryChargeState charge_state) {
   }
   
   if (lastCharging) {
-    // APP_LOG(APP_LOG_LEVEL_INFO, "Charger disconnected. Store state to
-    // history");
+    APP_LOG(APP_LOG_LEVEL_INFO, "Charger disconnected. Store state to history");
     history.timestamp = now;
     history.charge = charge_state.charge_percent;
     history.last_estimated = charge_state.charge_percent;
@@ -61,8 +60,10 @@ static void estimate_battery(BatteryChargeState charge_state) {
   int historyTimeHours = history.timestamp / 60 / 60;
   int historyChargePercent = history.charge * 1000;
 
-  if (history.last_estimated != charge_state.charge_percent && !lastCharging) {
+  if (history.last_estimated != charge_state.charge_percent && !lastCharging && charge_state.charge_percent < 90) {
     // new estimation when battery level changed and was not disconnected
+    // ignore battery levels 100% and 90%. they are unreliable
+    APP_LOG(APP_LOG_LEVEL_INFO, "New estimation");
     int currentTimeHours = (int)now / 60 / 60;
     int currentChargePercent = charge_state.charge_percent * 1000;
 
@@ -73,9 +74,8 @@ static void estimate_battery(BatteryChargeState charge_state) {
   }
 
   // estimated time when battery is 0
-  int estimatedBatteryLife = (-historyChargePercent + history.slope * historyTimeHours) / history.slope * 60 * 60;
-  // APP_LOG(APP_LOG_LEVEL_INFO, "Estimated battery life until %d",
-  // estimatedBatteryLife);
+  int estimatedBatteryLife = (-historyChargePercent / history.slope + historyTimeHours) * 60 * 60;
+  APP_LOG(APP_LOG_LEVEL_INFO, "Estimated battery life until %d", estimatedBatteryLife);
   persist_write_data(BATT_HISTORY_KEY, &history, sizeof(BatteryHistory));
 
   ///////////////
