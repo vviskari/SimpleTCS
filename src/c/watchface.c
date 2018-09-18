@@ -100,6 +100,8 @@ static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
     }
 
     if (tick_time->tm_min == 0) {
+      // Update weather once an hour
+      handle_weather(true);
       // Draw calendar every hour on the hour
       drawcal();
       if (tick_time->tm_hour == 0) {
@@ -110,10 +112,6 @@ static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
     // Steps every 5 mins
     if (tick_time->tm_min % 5 == 0) {
       handle_steps();
-    }
-    // Update weather twice an hour
-    if (tick_time->tm_min % 30 == 0) {
-      handle_weather(true);
     }
   }
 }
