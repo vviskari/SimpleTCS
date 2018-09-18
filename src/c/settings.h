@@ -5,7 +5,7 @@ typedef struct {
   char weekStartDay;
   char weatherTemp;
   char weatherProvider;
-  char weatherApiKey[20];
+  char weatherApiKey[33];
   bool forecast;
   char viewMode;
   char dateFormat;

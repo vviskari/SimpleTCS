@@ -40,8 +40,8 @@ static int shaketicks = 0;
 static int MAX_SECONDS = 30;
 
 void toggle_animation() {
-  // animate only when weatherprovider is wunderground and viewMode is not calendar or forecast
-  if (settings.weatherProvider != 'w' || settings.viewMode == 'c' || settings.viewMode == 'f') {
+  // animate only when weatherprovider is wunderground or owm and viewMode is not calendar or forecast
+  if ((settings.weatherProvider != 'w' && settings.weatherProvider != 'o') || settings.viewMode == 'c' || settings.viewMode == 'f') {
     return;
   }
   show_forecast = !show_forecast;

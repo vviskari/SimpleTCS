@@ -56,16 +56,16 @@ static void conf_inbox_received_handler(DictionaryIterator *iter, void *context)
     if (old != settings.weatherProvider) {
       updateWeather = true;
     }
-    if (settings.weatherProvider != 'w') {
+    if (settings.weatherProvider != 'w' && settings.weatherProvider != 'o') {
       set_show_forecast(false);
     }
   }
 
   conf = dict_find(iter, MESSAGE_KEY_wak);
   if (conf) {
-    char old[20];
-    strncpy(old, settings.weatherApiKey, 20);
-    strncpy(settings.weatherApiKey, conf->value->cstring, 20);
+    char old[33];
+    strncpy(old, settings.weatherApiKey, 33);
+    strncpy(settings.weatherApiKey, conf->value->cstring, 33);
     if (strcmp(old, settings.weatherApiKey) != 0) {
       updateWeather = true;
     }
