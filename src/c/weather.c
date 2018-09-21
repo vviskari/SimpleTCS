@@ -398,16 +398,28 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
 }
 
 void handle_weather(bool refresh) {
-  if (refresh && !userIsSleeping()) {
+  if (userIsSleeping()) {
+    // do nothing
+    return;
+  }
+  // old weather data
+  GenericWeatherPeekData peek = generic_weather_peek();
+  bool peek_available = peek.info && peek.info->timestamp;
+  if (peek_available) {
+    // check that at least 1 hour has passed
+    time_t now = time(NULL);
+    if (now - peek.info->timestamp >= 3600) {
+      APP_LOG(APP_LOG_LEVEL_INFO, "Weather updating, last time was %d sec ago", (int)(now - peek.info->timestamp));
+      refresh = true;
+    }
+  }
+  // no peek data, or refresh requested
+  if (!peek_available || refresh) {
+    // request new data from remote
     app_timer_register(3000, js_ready_handler, NULL);
   } else {
-    GenericWeatherPeekData peek = generic_weather_peek();
-    if (!peek.info || !peek.info->timestamp) {
-      APP_LOG(APP_LOG_LEVEL_INFO, "handle, no peek");
-      app_timer_register(3000, js_ready_handler, NULL);
-    } else {
-      weather_callback(peek.info, peek.forecast, peek.forecastSize, GenericWeatherStatusAvailable);
-    }
+    // use old data
+    weather_callback(peek.info, peek.forecast, peek.forecastSize, GenericWeatherStatusAvailable);
   }
 }
 

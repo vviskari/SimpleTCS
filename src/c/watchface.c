@@ -8,11 +8,11 @@
 #include <pebble-generic-weather/pebble-generic-weather.h>
 #include <pebble.h>
 
-#include "global.h"
 #include "battery.h"
 #include "bluetooth.h"
 #include "calendar.h"
 #include "datetime.h"
+#include "global.h"
 #include "settings.h"
 #include "steps.h"
 #include "utils.h"
@@ -41,7 +41,8 @@ static int MAX_SECONDS = 30;
 
 void toggle_animation() {
   // animate only when weatherprovider is wunderground or owm and viewMode is not calendar or forecast
-  if ((settings.weatherProvider != 'w' && settings.weatherProvider != 'o') || settings.viewMode == 'c' || settings.viewMode == 'f') {
+  if ((settings.weatherProvider != 'w' && settings.weatherProvider != 'o') || settings.viewMode == 'c' ||
+      settings.viewMode == 'f') {
     return;
   }
   show_forecast = !show_forecast;
@@ -58,9 +59,8 @@ void toggle_animation() {
     layer_set_frame(s_animate_container, finish);
     return;
   }
-  
-  PropertyAnimation *prop_anim = property_animation_create_layer_frame(s_animate_container, 
-                                                                       &start, &finish);
+
+  PropertyAnimation *prop_anim = property_animation_create_layer_frame(s_animate_container, &start, &finish);
   Animation *anim = property_animation_get_animation(prop_anim);
   const int delay_ms = 0;
   const int duration_ms = 1000;
@@ -84,9 +84,8 @@ void set_show_forecast(bool show) {
 }
 
 static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
-
   bool from_init = false;
-  if (!tick_time){
+  if (!tick_time) {
     // was called from init
     time_t now = time(NULL);
     tick_time = localtime(&now);
@@ -100,8 +99,6 @@ static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
     }
 
     if (tick_time->tm_min == 0) {
-      // Update weather once an hour
-      handle_weather(true);
       // Draw calendar every hour on the hour
       drawcal();
       if (tick_time->tm_hour == 0) {
@@ -109,9 +106,13 @@ static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
         handle_battery(battery_state_service_peek());
       }
     }
-    // Steps every 5 mins
+
     if (tick_time->tm_min % 5 == 0) {
+      // Steps every 5 mins
       handle_steps();
+      // Call weather update with false.
+      // It will use old data or fetch new if 1 hour has passed since last update.
+      handle_weather(false);
     }
   }
 }
@@ -125,7 +126,6 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
   }
 
   if (shaketicks % 2 == 0) {
-
     if (settings.viewMode != 't') {
       if (shakes == 2) {
         show_seconds = !show_seconds;
@@ -156,7 +156,7 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
     if (!show_seconds) {
       tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
       return;
-    }    
+    }
   }
 
   if (show_seconds) {
@@ -188,7 +188,7 @@ static void load_window_state() {
   }
 }
 
-static void save_window_state() { 
+static void save_window_state() {
   persist_write_bool(FORECAST_TOGGLE_KEY, show_forecast);
 }
 
@@ -198,10 +198,10 @@ static void main_window_load(Window *window) {
 
   s_calendar_container = layer_create(GRect(0, 0, 144, 51));
   layer_add_child(s_animate_container, s_calendar_container);
-  
+
   s_forecast_container = layer_create(GRect(144, 5, F_WIDTH, F_HEIGHT));
   layer_add_child(s_animate_container, s_forecast_container);
-  
+
   layer_add_child(window_layer, s_animate_container);
 
   bluetooth_load();
@@ -245,8 +245,9 @@ static void init() {
   s_main_window = window_create();
   window_set_background_color(s_main_window, GColorBlack);
   window_set_window_handlers(s_main_window, (WindowHandlers){
-    .load = main_window_load, .unload = main_window_unload,
-  });
+                                                .load = main_window_load,
+                                                .unload = main_window_unload,
+                                            });
   window_stack_push(s_main_window, true);
 }
 
