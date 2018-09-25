@@ -398,14 +398,10 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
 }
 
 void handle_weather(bool refresh) {
-  if (userIsSleeping()) {
-    // do nothing
-    return;
-  }
   // old weather data
   GenericWeatherPeekData peek = generic_weather_peek();
   bool peek_available = peek.info && peek.info->timestamp;
-  if (peek_available) {
+  if (peek_available && !userIsSleeping()) {
     // check that at least 1 hour has passed
     time_t now = time(NULL);
     if (now - peek.info->timestamp >= 3600) {
