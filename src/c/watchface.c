@@ -238,8 +238,8 @@ static void main_window_unload(Window *window) {
 
 static void init() {
   load_settings();
-  weather_init();
   settings_init();
+  weather_init();
   events_app_message_open();
 
   s_main_window = window_create();

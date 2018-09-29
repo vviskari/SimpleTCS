@@ -42,8 +42,9 @@ static ForecastParams params;
 static int forecastSize = 0;
 
 static void render_weather(GenericWeatherInfo *info) {
+  APP_LOG(APP_LOG_LEVEL_INFO, "render_weather: called");
   if (!info) {
-    APP_LOG(APP_LOG_LEVEL_INFO, "render_weather no info");
+    APP_LOG(APP_LOG_LEVEL_INFO, "render_weather: no info");
     return;
   }
 
@@ -124,36 +125,38 @@ static void render_weather(GenericWeatherInfo *info) {
 
 static void weather_callback(GenericWeatherInfo *info, GenericWeatherForecast *_forecast, int _forecastSize,
                              GenericWeatherStatus status) {
+  APP_LOG(APP_LOG_LEVEL_INFO, "weather_callback: called, status=%d", status);
+
   if (status != GenericWeatherStatusAvailable) {
     // load old state
+    APP_LOG(APP_LOG_LEVEL_INFO, "weather_callback: weather not available. call generic_weather_load and return");
     generic_weather_load(WEATHER_KEY);
     if (settings.weatherProvider == 'w' || settings.weatherProvider == 'o') {
-      APP_LOG(APP_LOG_LEVEL_INFO, "weather not available. load old forecast");
       generic_weather_load_forecast(WEATHER_KEY_FORECAST);
     }
     return;
+  } else {
+    APP_LOG(APP_LOG_LEVEL_INFO, "weather_callback: call generic_weather_save(WEATHER_KEY)");
+    generic_weather_save(WEATHER_KEY);
+    if (settings.weatherProvider == 'w' || settings.weatherProvider == 'o') {
+      generic_weather_save_forecast(WEATHER_KEY_FORECAST);
+    }
   }
 
-  generic_weather_save(WEATHER_KEY);
   render_weather(info);
 
   if (settings.weatherProvider != 'w' && settings.weatherProvider != 'o') {
+    APP_LOG(APP_LOG_LEVEL_INFO, "weather_callback: no provider with forecast. return.");
     return;
   }
 
-  if (_forecastSize == 0) {
-    // weather was available but no forecast received for some reason. load old one
-    generic_weather_load_forecast(WEATHER_KEY_FORECAST);
-  } else {
-    generic_weather_save_forecast(WEATHER_KEY_FORECAST);
-  }
-
-  GenericWeatherPeekData peek = generic_weather_peek();
-  if (!peek.forecast || peek.forecastSize == 0) {
+  if (_forecastSize == 0 || !_forecast) {
+    APP_LOG(APP_LOG_LEVEL_WARNING, "weather_callback: forecast size was null! return");
     return;
   }
-  forecast = peek.forecast;
-  forecastSize = peek.forecastSize;
+
+  forecast = _forecast;
+  forecastSize = _forecastSize;
   params = (ForecastParams){
       .maxTemp = -1000, .minTemp = 1000, .maxValue = -1000, .minValue = 1000, .maxTime = 0, .minTime = 0};
 
@@ -185,6 +188,8 @@ static void weather_callback(GenericWeatherInfo *info, GenericWeatherForecast *_
 }
 
 static void js_ready_handler(void *context) {
+  APP_LOG(APP_LOG_LEVEL_INFO, "js_ready_handler: called");
+
   generic_weather_set_location(GENERIC_WEATHER_GPS_LOCATION);
 
   GenericWeatherPeekData peek = generic_weather_peek();
@@ -217,6 +222,8 @@ static void js_ready_handler(void *context) {
     default:
       generic_weather_set_provider(GenericWeatherProviderUnknown);
   }
+  APP_LOG(APP_LOG_LEVEL_INFO, "js_ready_handler: call generic_weather_fetch");
+
   generic_weather_fetch(weather_callback);
 }
 
@@ -399,22 +406,30 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
 
 void handle_weather(bool refresh) {
   // old weather data
+  APP_LOG(APP_LOG_LEVEL_INFO, "handle_weather: called, refresh=%d", refresh);
   GenericWeatherPeekData peek = generic_weather_peek();
   bool peek_available = peek.info && peek.info->timestamp;
   if (peek_available && !userIsSleeping()) {
     // check that at least 1 hour has passed
     time_t now = time(NULL);
     if (now - peek.info->timestamp >= 3600) {
-      APP_LOG(APP_LOG_LEVEL_INFO, "Weather updating, last time was %d sec ago", (int)(now - peek.info->timestamp));
+      APP_LOG(APP_LOG_LEVEL_INFO, "handle_weather: weather updating, last time was %d sec ago",
+              (int)(now - peek.info->timestamp));
+      // update timestamp to 55 minutes ago
+      // if weather update fails for some reason, we will try again in 5 minutes
+      peek.info->timestamp = now-3300;
       refresh = true;
     }
   }
   // no peek data, or refresh requested
   if (!peek_available || refresh) {
     // request new data from remote
+    APP_LOG(APP_LOG_LEVEL_INFO, "handle_weather: request new data, peek_available=%d, refresh=%d", peek_available,
+            refresh);
     app_timer_register(3000, js_ready_handler, NULL);
-  } else {
-    // use old data
+  }
+  if (peek_available) {
+    APP_LOG(APP_LOG_LEVEL_INFO, "handle_weather: call weather_callback with old peek data");
     weather_callback(peek.info, peek.forecast, peek.forecastSize, GenericWeatherStatusAvailable);
   }
 }
@@ -473,6 +488,8 @@ void weather_unload() {
 }
 
 void weather_init() {
+  APP_LOG(APP_LOG_LEVEL_INFO, "weather_init: generic_weather_init and generic_weather_load");
+
   generic_weather_init();
   generic_weather_set_forecast(true);
   // generic_weather_set_location( (GenericWeatherCoordinates) { 6046999, 2508666 } );
