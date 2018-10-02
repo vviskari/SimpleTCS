@@ -306,6 +306,11 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
     // draw vertical line
     if (settings.tempGrid && renderline) {
       graphics_draw_line(ctx, GPoint(x, 0), GPoint(x, F_HEIGHT - chartPaddingY - 1));
+      if (hour == 0) {
+        // bold midnight
+        graphics_draw_line(ctx, GPoint(x - 1, 0), GPoint(x - 1, F_HEIGHT - chartPaddingY - 1));
+        graphics_draw_line(ctx, GPoint(x + 1, 0), GPoint(x + 1, F_HEIGHT - chartPaddingY - 1));
+      }
     }
 
     // hour number below X
@@ -417,7 +422,7 @@ void handle_weather(bool refresh) {
               (int)(now - peek.info->timestamp));
       // update timestamp to 55 minutes ago
       // if weather update fails for some reason, we will try again in 5 minutes
-      peek.info->timestamp = now-3300;
+      peek.info->timestamp = now - 3300;
       refresh = true;
     }
   }
