@@ -284,20 +284,32 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
   GFont font = fonts_get_system_font(FONT_KEY_GOTHIC_09);
   rect_bounds = GRect(-2, -4, 17, 10);
 
+  // adapt to DST and different timezone offsets
+  // wunderground forecasts are every 2h, owm every 3h
+  int offset = 0;
+  if (settings.weatherProvider == 'w') {
+    if (get_time_hour(forecast[0].timestamp) % 2 == 1) {
+      offset = 1;
+    }
+  }
+  if (settings.weatherProvider == 'o') {
+    int hour = get_time_hour(forecast[0].timestamp) % 3;
+    if (hour == 1) {
+      offset = -1;
+    }
+    if (hour == 2) {
+      offset = 1;
+    }
+  }
   for (int i = 1; i < forecastSize; i++) {
-    time_t time = forecast[i].timestamp;
-    // marker string
-    char s_hour[5];
-    strftime(s_hour, 3, "%H", localtime(&time));
-    // hour number
-    int hour = atoi(s_hour);
-    bool evenHours = hour % 2 == 0;
+    int hour = (get_time_hour(forecast[i].timestamp) + offset) % 24;
 
-    // time lines every 6h (or 12h)
-    bool renderline = (evenHours && hour % 6 == 0) || (!evenHours && hour % 6 == 1);
+    // time lines every 6h
+    bool renderline = hour % 6 == 0;
+    // markers every 6 or 12h
     bool rendermarker = renderline;
     if (settings.forecastTimeInterval == '3') {
-      rendermarker = (evenHours && hour % 12 == 0) || (!evenHours && hour % 12 == 1);
+      rendermarker = hour % 12 == 0;
     }
 
     // x-position, move x back 1 hour if odd hours
@@ -315,6 +327,7 @@ static void forecast_update_proc(Layer *layer, GContext *ctx) {
 
     // hour number below X
     if (rendermarker) {
+      char s_hour[5];
       if (settings.forecastTimeInterval == '3') {
         // 12h AM/PM marker
         if (hour == 0 || hour == 1) {

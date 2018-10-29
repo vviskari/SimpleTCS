@@ -17,3 +17,10 @@ bool userIsSleeping() {
 #endif
   return isSleeping;
 }
+
+int get_time_hour(time_t time) {
+    char s_hour[5];
+    strftime(s_hour, 3, "%H", localtime(&time));
+    int hour = atoi(s_hour);
+    return hour;
+}
